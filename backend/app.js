@@ -3,7 +3,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const assessmentRoutes = require('./routes/assessment.routes');
+  // Import routes
 
+  // Use routes
+  app.use('/api/assessments', assessmentRoutes);
 // Load environment variables
 dotenv.config();
 
@@ -26,7 +30,6 @@ mongoose.connect(process.env.MONGO_URI)
   .catch((error) => {
     console.error("❌ MongoDB Connection Failed:", error.message);
   });
-
 // Testing 
 app.get("/", (req, res) => {
   res.send("MERN Backend is Running...");
