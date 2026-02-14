@@ -8,7 +8,7 @@ const {
   getAssessmentById,
   updateAssessment,
   deleteAssessment,
-} = require("../controller/assessment");
+} = require("../Controller/assessment.controller");
 
 router.post("/", upload.single("file"), createAssessment);
 router.get("/", getAllAssessments);
