@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../api";
+import "./Assessment.css";
 
 function Assessment() {
   const [assessments, setAssessments] = useState([]);
@@ -70,8 +71,10 @@ function Assessment() {
 
   // Delete
   const handleDelete = async (id) => {
-    await API.delete(`/assessment/${id}`);
-    fetchAssessments();
+    if (window.confirm("Are you sure you want to delete this assessment?")) {
+      await API.delete(`/assessment/${id}`);
+      fetchAssessments();
+    }
   };
 
   // Edit
@@ -83,94 +86,127 @@ function Assessment() {
       dueDate: assessment.dueDate?.substring(0, 10),
     });
     setEditingId(assessment._id);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <div style={{ padding: "40px" }}>
-      <h2>Assessment Management</h2>
+    <div className="assessment-container">
+      <h2 className="assessment-header">Assessment Management</h2>
 
-      {/* FORM */}
-      <form onSubmit={handleSubmit} style={{ marginBottom: "30px" }}>
-        <input
-          type="text"
-          name="title"
-          placeholder="Title"
-          value={formData.title}
-          onChange={handleChange}
-          required
-        />
-        <br /><br />
+      <div className="assessment-layout">
+        {/* FORM COLUMN */}
+        <div className="form-column">
+          <form onSubmit={handleSubmit} className="assessment-form">
+            <h3 style={{ marginTop: 0, marginBottom: '1rem', fontSize: '1.25rem' }}>
+              {editingId ? "Edit Assessment" : "Create New Assessment"}
+            </h3>
 
-        <textarea
-          name="description"
-          placeholder="Description"
-          value={formData.description}
-          onChange={handleChange}
-        />
-        <br /><br />
+            <div className="form-group">
+              <label htmlFor="title">Assessment Title</label>
+              <input
+                id="title"
+                type="text"
+                name="title"
+                placeholder="e.g. Midterm Exam"
+                value={formData.title}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
-        <input
-          type="number"
-          name="totalMarks"
-          placeholder="Total Marks"
-          value={formData.totalMarks}
-          onChange={handleChange}
-        />
-        <br /><br />
+            <div className="form-group">
+              <label htmlFor="description">Description (Optional)</label>
+              <textarea
+                id="description"
+                name="description"
+                placeholder="Briefly describe the assessment..."
+                value={formData.description}
+                onChange={handleChange}
+              />
+            </div>
 
-        <input
-          type="date"
-          name="dueDate"
-          value={formData.dueDate}
-          onChange={handleChange}
-        />
-        <br /><br />
+            <div className="form-group">
+              <label htmlFor="totalMarks">Total Marks</label>
+              <input
+                id="totalMarks"
+                type="number"
+                name="totalMarks"
+                placeholder="100"
+                value={formData.totalMarks}
+                onChange={handleChange}
+              />
+            </div>
 
-        {!editingId && (
-          <>
-            <input
-              type="file"
-              onChange={(e) => setFile(e.target.files[0])}
-            />
-            <br /><br />
-          </>
-        )}
+            <div className="form-group">
+              <label htmlFor="dueDate">Due Date</label>
+              <input
+                id="dueDate"
+                type="date"
+                name="dueDate"
+                value={formData.dueDate}
+                onChange={handleChange}
+              />
+            </div>
 
-        <button type="submit">
-          {editingId ? "Update Assessment" : "Create Assessment"}
-        </button>
-      </form>
+            {!editingId && (
+              <div className="form-group">
+                <label htmlFor="file">Upload Attachment (PDF/Image)</label>
+                <input
+                  id="file"
+                  type="file"
+                  onChange={(e) => setFile(e.target.files[0])}
+                />
+              </div>
+            )}
 
-      {/* LIST */}
-      <h3>All Assessments</h3>
-      {assessments.map((a) => (
-        <div
-          key={a._id}
-          style={{
-            border: "1px solid gray",
-            padding: "15px",
-            marginBottom: "10px",
-          }}
-        >
-          <h4>{a.title}</h4>
-          <p>{a.description}</p>
-          <p>Total Marks: {a.totalMarks}</p>
-          <p>Due Date: {new Date(a.dueDate).toLocaleDateString()}</p>
-
-          {a.fileUrl && (
-            <a href={a.fileUrl} target="_blank" rel="noreferrer">
-              View File
-            </a>
-          )}
-
-          <br /><br />
-
-          <button onClick={() => handleEdit(a)}>Edit</button>
-          <button onClick={() => handleDelete(a._id)} style={{ marginLeft: "10px" }}>
-            Delete
-          </button>
+            <button type="submit" className="btn-primary">
+              {editingId ? "Update Assessment" : "Create Assessment"}
+            </button>
+            {editingId && (
+              <button
+                type="button"
+                className="btn-edit"
+                style={{ marginTop: '0.5rem' }}
+                onClick={() => {
+                  setEditingId(null);
+                  setFormData({ title: "", description: "", totalMarks: "", dueDate: "" });
+                }}
+              >
+                Cancel Edit
+              </button>
+            )}
+          </form>
         </div>
-      ))}
+
+        {/* LIST COLUMN */}
+        <div className="list-column">
+          <h3 className="assessment-list-header">All Assessments</h3>
+          <div className="assessment-grid">
+            {assessments.map((a) => (
+              <div key={a._id} className="assessment-card">
+                <h4>{a.title}</h4>
+                <p>{a.description || "No description provided."}</p>
+
+                <div className="assessment-meta">
+                  <span><strong>Marks:</strong> {a.totalMarks || "N/A"}</span>
+                  <span><strong>Due:</strong> {new Date(a.dueDate).toLocaleDateString()}</span>
+                </div>
+
+                {a.fileUrl && (
+                  <a href={a.fileUrl} target="_blank" rel="noreferrer" className="file-link">
+                    📎 View Attachment
+                  </a>
+                )}
+
+                <div className="card-actions">
+                  <button onClick={() => handleEdit(a)} className="btn-edit">Edit</button>
+                  <button onClick={() => handleDelete(a._id)} className="btn-delete">Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
