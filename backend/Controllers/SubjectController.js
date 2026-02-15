@@ -1,7 +1,8 @@
-const Subject = require("../Models/SubjectModel.js");
+// Controllers/SubjectController.js
+import Subject from "../Models/SubjectModel.js";
 
-// CREATE
-exports.createSubject = async (req, res) => {
+// CREATE SUBJECT
+export const createSubject = async (req, res) => {
   try {
     const { name, description } = req.body;
     if (!name) return res.status(400).json({ success: false, message: "Name is required" });
@@ -13,8 +14,8 @@ exports.createSubject = async (req, res) => {
   }
 };
 
-// READ
-exports.getSubjects = async (req, res) => {
+// GET ALL SUBJECTS
+export const getSubjects = async (req, res) => {
   try {
     const subjects = await Subject.find();
     res.status(200).json({ success: true, data: subjects });

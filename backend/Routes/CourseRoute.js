@@ -1,6 +1,7 @@
-const express = require("express");
+import express from "express";
+import * as courseController from "../Controllers/CourseController.js";
+
 const router = express.Router();
-const courseController = require("../Controllers/CourseController.js");
 
 // CREATE
 router.post("/courses", courseController.createCourse);
@@ -18,4 +19,4 @@ router.patch("/courses/:id/toggle-publish", courseController.togglePublishCourse
 // DELETE (Soft)
 router.delete("/courses/:id", courseController.deleteCourse);
 
-module.exports = router;
+export default router;

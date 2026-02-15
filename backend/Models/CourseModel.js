@@ -1,7 +1,7 @@
 // models/Course.js
 
-const mongoose = require("mongoose");
-const { nanoid } = require("nanoid");
+import mongoose from "mongoose";
+import { nanoid } from "nanoid";
 
 const courseSchema = new mongoose.Schema(
   {
@@ -37,12 +37,12 @@ const courseSchema = new mongoose.Schema(
     },
 
     duration: {
-      type: Number, // in hours
+      type: Number,
       required: true
     },
 
     coverImage: {
-      type: String, // Cloudinary or image URL
+      type: String,
       required: true
     },
 
@@ -107,4 +107,6 @@ const courseSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("Course", courseSchema);
+const Course = mongoose.model("Course", courseSchema);
+
+export default Course;

@@ -1,7 +1,8 @@
-const User = require("../Models/UserModel.js");
+// Controllers/UserController.js
+import User from "../Models/UserModel.js";
 
 // CREATE a new user
-exports.createUser = async (req, res) => {
+export const createUser = async (req, res) => {
   try {
     const { name, email, role } = req.body;
 
@@ -22,7 +23,7 @@ exports.createUser = async (req, res) => {
 };
 
 // GET all users
-exports.getUsers = async (req, res) => {
+export const getUsers = async (req, res) => {
   try {
     const users = await User.find();
     res.status(200).json({ success: true, data: users });
