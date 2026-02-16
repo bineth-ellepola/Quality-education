@@ -44,20 +44,20 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
- 
-
-app.use("/api", courseRoutes);
-app.use("/api/subjects", subjectRoute);
-app.use("/api/users", userRoutes);
-
-
-// Health Check
+ // Health Check
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
     message: "LMS Course API OK!"
   });
 });
+
+app.use("/api", courseRoutes);
+app.use("/api/subjects", subjectRoute);
+app.use("/api/users", userRoutes);
+
+
+ 
 
 
  
