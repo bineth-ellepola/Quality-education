@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { GraduationCap, Mail, Lock, ArrowRight, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
-import s1 from '../../../assets/S4.jpg';
+import s1 from '../../../assets/s3.jpg';
 
 function Signin() {
   const [showPassword, setShowPassword] = useState(false);
@@ -45,7 +45,7 @@ function Signin() {
             <div className="p-2 bg-white/10 backdrop-blur-md rounded-xl border border-white/20">
               <GraduationCap size={32} />
             </div>
-            <span className="text-2xl font-bold tracking-tight">EduFlow.</span>
+            <span className="text-2xl font-bold tracking-tight">Studly.</span>
           </motion.div>
 
           <motion.div
@@ -81,7 +81,7 @@ function Signin() {
           className="w-full max-w-md"
         >
           <div className="mb-12">
-            <h1 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">Login</h1>
+            <h1 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">Signin</h1>
             <p className="text-slate-500 text-lg">Enter your details to access your dashboard.</p>
           </div>
 
