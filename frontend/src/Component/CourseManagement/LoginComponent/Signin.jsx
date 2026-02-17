@@ -4,8 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Loader2, CheckCircle2, AlertCircle, X, ChevronRight } from 'lucide-react';
 import s3 from '../../../assets/s3.jpg'
+import { useAppContext } from '../AppProvider';
 
 const Signin = () => {
+  const {setUser} = useAppContext()
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState([]); 
@@ -32,7 +34,10 @@ const Signin = () => {
       // Replace with your actual endpoint
       const response = await axios.post("http://localhost:5001/api/users/signin", form);
       addToast('success', 'Authentication successful. Welcome back!');
-      setTimeout(() => navigate('/dashboard'), 1500);
+      setUser(response.data.data)
+      const user = response.data.data
+      localStorage.setItem("user", JSON.stringify(user))
+      setTimeout(() => navigate('/dashboard'), 2500);
     } catch (error) {
       addToast('error', error.response?.data?.message || 'Unauthorized. Please check your credentials.');
     } finally {
