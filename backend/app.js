@@ -7,8 +7,6 @@ const cors = require("cors");
 const authRoutes = require("./Route/authRoutes");
 const userRoutes = require("./Route/UserRoute");
 
-app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
 // Load environment variables
 dotenv.config();
 
@@ -18,6 +16,8 @@ app.use(cors());
 app.use(express.json()); 
 
 
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 const PORT = process.env.PORT || 5000;
 
 // MongoDB Connection
