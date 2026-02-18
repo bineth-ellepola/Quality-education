@@ -1,7 +1,7 @@
-const User = require("../models/User");
-const Role = require("../models/Role");
-const Student = require("../models/Student");
-const Instructor = require("../models/Instructor");
+const User = require("../Model/UserModel");
+const Role = require("../Model/RoleModel");
+const Student = require("../Model/Student");
+const Instructor = require("../Model/Instructor");
 const jwt = require("jsonwebtoken");
 
 //register 

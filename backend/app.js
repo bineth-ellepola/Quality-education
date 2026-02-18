@@ -34,5 +34,5 @@ mongoose.connect(process.env.MONGO_URI)
 
 // Testing 
 app.get("/", (req, res) => {
-  res.send("MERN Backend is Running...");
+  res.send("MERN backend is Running...");
 });
