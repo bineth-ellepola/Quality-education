@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  upload,
+  getPresignedUrl,
   createAssessment,
   getAllAssessments,
   getAssessmentById,
@@ -11,16 +11,14 @@ const {
   deleteAssessment,
 } = require("../Controller/assessment.controller");
 
-router.post("/", upload.single("file"), createAssessment);
+router.get("/presigned-url", getPresignedUrl);
+router.post("/", createAssessment);
 router.get("/", getAllAssessments);
 router.get("/view/:id", viewAttachment);
 router.get("/:id", getAssessmentById);
-router.put("/:id", upload.single("file"), updateAssessment);
+router.put("/:id", updateAssessment);
 router.delete("/:id", deleteAssessment);
 
-```javascript
 router.get("/details/:id", getAssessmentById);
-```
-
 
 module.exports = router;

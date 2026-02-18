@@ -48,23 +48,63 @@ function UpdateAssessment() {
     // Handle Submit
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // 0. Validations
+        const { title, description, totalMarks, dueDate } = formData;
+
+        if (!title || !description || !totalMarks || !dueDate) {
+            alert("All fields are required.");
+            return;
+        }
+
+        if (Number(totalMarks) < 0) {
+            alert("Total marks cannot be negative.");
+            return;
+        }
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(dueDate);
+        if (selectedDate < today) {
+            alert("Due date cannot be in the past.");
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const data = new FormData();
-            data.append("title", formData.title);
-            data.append("description", formData.description);
-            data.append("totalMarks", formData.totalMarks);
-            data.append("dueDate", formData.dueDate);
-            if (file) data.append("file", file);
+            let updatePayload = { ...formData };
 
-            await API.put(`/assessment/${id}`, data, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
+            if (file) {
+                // 1. Get Pre-signed URL from Backend
+                const presignedRes = await API.get(`/assessment/presigned-url`, {
+                    params: {
+                        fileName: file.name,
+                        fileType: file.type
+                    }
+                });
+
+                const { uploadUrl, publicUrl } = presignedRes.data;
+
+                // 2. Upload directly to Supabase S3
+                await fetch(uploadUrl, {
+                    method: 'PUT',
+                    body: file,
+                    headers: {
+                        'Content-Type': file.type || 'application/octet-stream'
+                    }
+                });
+
+                updatePayload.fileUrl = publicUrl;
+                updatePayload.fileName = file.name;
+            }
+
+            // 3. Update MongoDB via Backend
+            await API.put(`/assessment/${id}`, updatePayload);
 
             navigate("/view-assessments");
         } catch (err) {
-            console.error(err);
+            console.error("Update Error:", err);
             alert("Failed to update assessment. Please try again.");
         } finally {
             setLoading(false);

@@ -1,19 +1,7 @@
 const Assessment = require("../Model/Assessment");
-const multer = require("multer");
-const multerS3 = require("multer-s3");
+const { PutObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const s3 = require("../config/s3");
-
-// S3 Upload Middleware
-const upload = multer({
-  storage: multerS3({
-    s3: s3,
-    bucket: process.env.AWS_BUCKET_NAME,
-    acl: "public-read",
-    key: function (req, file, cb) {
-      cb(null, Date.now().toString() + "-" + file.originalname);
-    },
-  }),
-});
 
 // Helper to ensure public Supabase URL
 const formatPublicUrl = (url) => {
@@ -36,6 +24,33 @@ const formatPublicUrl = (url) => {
   return url;
 };
 
+// GENERATE PRE-SIGNED URL
+const getPresignedUrl = async (req, res) => {
+  try {
+    const { fileName, fileType } = req.query;
+    if (!fileName) return res.status(400).json({ message: "fileName is required" });
+
+    const key = `assessments/${Date.now()}-${fileName}`;
+    const command = new PutObjectCommand({
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: key,
+      ContentType: fileType || "application/octet-stream",
+      ACL: "public-read",
+    });
+
+    const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
+    
+    // The public URL where the file will be accessible after upload
+    const projectRef = process.env.AWS_ENDPOINT.split('.')[0].split('//')[1];
+    const publicUrl = `https://${projectRef}.supabase.co/storage/v1/object/public/${process.env.AWS_BUCKET_NAME}/${key}`;
+
+    res.json({ uploadUrl: signedUrl, publicUrl });
+  } catch (error) {
+    console.error("Presigned URL Error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // CREATE
 const createAssessment = async (req, res) => {
   try {
@@ -44,15 +59,11 @@ const createAssessment = async (req, res) => {
       description: req.body.description,
       totalMarks: req.body.totalMarks,
       dueDate: req.body.dueDate,
-      fileUrl: req.file ? req.file.location : null,
-      fileName: req.file ? req.file.originalname : null,
+      fileUrl: req.body.fileUrl || null,
+      fileName: req.body.fileName || null,
     });
 
-    // Return with formatted URL for frontend
-    const assessmentObj = newAssessment.toObject();
-    assessmentObj.fileUrl = formatPublicUrl(assessmentObj.fileUrl);
-
-    res.status(201).json(assessmentObj);
+    res.status(201).json(newAssessment);
   } catch (error) {
     console.error("Create Error:", error);
     res.status(500).json({ message: error.message });
@@ -101,9 +112,9 @@ const updateAssessment = async (req, res) => {
       dueDate: req.body.dueDate || assessment.dueDate,
     };
 
-    if (req.file) {
-      updateFields.fileUrl = req.file.location;
-      updateFields.fileName = req.file.originalname;
+    if (req.body.fileUrl) {
+      updateFields.fileUrl = req.body.fileUrl;
+      updateFields.fileName = req.body.fileName;
     }
 
     const updated = await Assessment.findByIdAndUpdate(
@@ -112,9 +123,7 @@ const updateAssessment = async (req, res) => {
       { new: true }
     );
 
-    const obj = updated.toObject();
-    obj.fileUrl = formatPublicUrl(obj.fileUrl);
-    res.json(obj);
+    res.json(updated);
   } catch (error) {
     console.error("Update Error:", error);
     res.status(500).json({ message: error.message });
@@ -147,7 +156,7 @@ const deleteAssessment = async (req, res) => {
 };
 
 module.exports = {
-  upload,
+  getPresignedUrl,
   createAssessment,
   getAllAssessments,
   getAssessmentById,

@@ -22,24 +22,74 @@ function CreateAssessment() {
     // Handle Submit
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // 0. Validations
+        const { title, description, totalMarks, dueDate } = formData;
+
+        // Check if all fields are filled
+        if (!title || !description || !totalMarks || !dueDate) {
+            alert("All fields are required.");
+            return;
+        }
+
+        // Check if total marks is non-negative
+        if (Number(totalMarks) < 0) {
+            alert("Total marks cannot be negative.");
+            return;
+        }
+
+        // Check if due date is not in the past
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const selectedDate = new Date(dueDate);
+        if (selectedDate < today) {
+            alert("Due date cannot be in the past.");
+            return;
+        }
+
         setLoading(true);
 
         try {
-            const data = new FormData();
-            data.append("title", formData.title);
-            data.append("description", formData.description);
-            data.append("totalMarks", formData.totalMarks);
-            data.append("dueDate", formData.dueDate);
-            if (file) data.append("file", file);
+            let fileUrl = null;
+            let fileName = null;
 
-            await API.post("/assessment", data, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
+            if (file) {
+                // 1. Get Pre-signed URL from Backend
+                const presignedRes = await API.get(`/assessment/presigned-url`, {
+                    params: {
+                        fileName: file.name,
+                        fileType: file.type
+                    }
+                });
+
+                const { uploadUrl, publicUrl } = presignedRes.data;
+
+                // 2. Upload directly to Supabase S3
+                await fetch(uploadUrl, {
+                    method: 'PUT',
+                    body: file,
+                    headers: {
+                        'Content-Type': file.type || 'application/octet-stream'
+                    }
+                });
+
+                fileUrl = publicUrl;
+                fileName = file.name;
+            }
+
+            // 3. Save to MongoDB via Backend
+            const assessmentData = {
+                ...formData,
+                fileUrl,
+                fileName
+            };
+
+            await API.post("/assessment", assessmentData);
 
             // Redirect to View Assessments
             navigate("/view-assessments");
         } catch (err) {
-            console.error(err);
+            console.error("Upload Error:", err);
             alert("Failed to create assessment. Please try again.");
         } finally {
             setLoading(false);
