@@ -15,6 +15,27 @@ const upload = multer({
   }),
 });
 
+// Helper to ensure public Supabase URL
+const formatPublicUrl = (url) => {
+  if (!url) return null;
+  // If it's already a public URL, return as is
+  if (url.includes('/storage/v1/object/public/')) return url;
+
+  // If it's an S3 endpoint URL, transform it
+  if (url.includes('storage.supabase.co/storage/v1/s3')) {
+    try {
+      const parts = url.split('/');
+      const fileName = parts.pop();
+      const bucketName = process.env.AWS_BUCKET_NAME;
+      const projectRef = process.env.AWS_ENDPOINT.split('.')[0].split('//')[1];
+      return `https://${projectRef}.supabase.co/storage/v1/object/public/${bucketName}/${fileName}`;
+    } catch (e) {
+      return url;
+    }
+  }
+  return url;
+};
+
 // CREATE
 const createAssessment = async (req, res) => {
   try {
@@ -24,10 +45,16 @@ const createAssessment = async (req, res) => {
       totalMarks: req.body.totalMarks,
       dueDate: req.body.dueDate,
       fileUrl: req.file ? req.file.location : null,
+      fileName: req.file ? req.file.originalname : null,
     });
 
-    res.status(201).json(newAssessment);
+    // Return with formatted URL for frontend
+    const assessmentObj = newAssessment.toObject();
+    assessmentObj.fileUrl = formatPublicUrl(assessmentObj.fileUrl);
+
+    res.status(201).json(assessmentObj);
   } catch (error) {
+    console.error("Create Error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -35,8 +62,13 @@ const createAssessment = async (req, res) => {
 // READ ALL
 const getAllAssessments = async (req, res) => {
   try {
-    const assessments = await Assessment.find();
-    res.json(assessments);
+    const assessments = await Assessment.find().sort({ createdAt: -1 });
+    const formatted = assessments.map(a => {
+      const obj = a.toObject();
+      obj.fileUrl = formatPublicUrl(obj.fileUrl);
+      return obj;
+    });
+    res.json(formatted);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -46,7 +78,11 @@ const getAllAssessments = async (req, res) => {
 const getAssessmentById = async (req, res) => {
   try {
     const assessment = await Assessment.findById(req.params.id);
-    res.json(assessment);
+    if (!assessment) return res.status(404).json({ message: "Not found" });
+
+    const obj = assessment.toObject();
+    obj.fileUrl = formatPublicUrl(obj.fileUrl);
+    res.json(obj);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -55,13 +91,46 @@ const getAssessmentById = async (req, res) => {
 // UPDATE
 const updateAssessment = async (req, res) => {
   try {
+    const assessment = await Assessment.findById(req.params.id);
+    if (!assessment) return res.status(404).json({ message: "Not found" });
+
+    const updateFields = {
+      title: req.body.title || assessment.title,
+      description: req.body.description !== undefined ? req.body.description : assessment.description,
+      totalMarks: req.body.totalMarks || assessment.totalMarks,
+      dueDate: req.body.dueDate || assessment.dueDate,
+    };
+
+    if (req.file) {
+      updateFields.fileUrl = req.file.location;
+      updateFields.fileName = req.file.originalname;
+    }
+
     const updated = await Assessment.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      { $set: updateFields },
       { new: true }
     );
 
-    res.json(updated);
+    const obj = updated.toObject();
+    obj.fileUrl = formatPublicUrl(obj.fileUrl);
+    res.json(obj);
+  } catch (error) {
+    console.error("Update Error:", error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// VIEW ATTACHMENT
+const viewAttachment = async (req, res) => {
+  try {
+    const assessment = await Assessment.findById(req.params.id);
+    if (!assessment || !assessment.fileUrl) {
+      return res.status(404).send("File not found");
+    }
+
+    const publicUrl = formatPublicUrl(assessment.fileUrl);
+    res.redirect(publicUrl);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -83,5 +152,6 @@ module.exports = {
   getAllAssessments,
   getAssessmentById,
   updateAssessment,
+  viewAttachment,
   deleteAssessment,
 };
