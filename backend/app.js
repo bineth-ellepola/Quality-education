@@ -3,7 +3,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
+// After app.use(express.json());
+const authRoutes = require("./Route/authRoutes");
+const userRoutes = require("./Route/UserRoute");
 
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
 // Load environment variables
 dotenv.config();
 
