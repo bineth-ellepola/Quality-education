@@ -3,6 +3,12 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 import { useNavigate } from 'react-router-dom';
+import img1 from '../../assets/img1.svg';
+import img2 from '../../assets/img2.svg';
+import img3 from '../../assets/img3.svg';
+import img4 from '../../assets/img4.svg';
+import img5 from '../../assets/img5.svg';
+import img6 from '../../assets/img6.svg';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutGrid, BookOpen, Users, BarChart3, Plus, Search, 
@@ -36,6 +42,8 @@ const InstructorDashboard = () => {
       console.error('Failed to load subjects', err);
     }
   };
+  const bgImages = [img1, img2, img3, img4, img5, img6];
+
 
   useEffect(() => {
     fetchSubjects();
@@ -178,80 +186,91 @@ const InstructorDashboard = () => {
           </div>
 
           {/* DYNAMIC CONTENT */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
   {filteredSubjects.map(sub => {
     const isOwner = sub.createdBy?._id === user._id;
+
+    // Random top image
+    const randomImage = bgImages[Math.floor(Math.random() * bgImages.length)];
 
     return (
       <div
         key={sub._id}
-        className="relative p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-all group"
+        className="relative bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-all group overflow-hidden"
       >
-        {/* 3-Dots Menu */}
-        {isOwner && (
-          <div className="absolute top-4 right-4">
-            <div className="relative">
-              <button
-                className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSubjects(prev =>
-                    prev.map(s =>
-                      s._id === sub._id
-                        ? { ...s, showMenu: !s.showMenu }
-                        : { ...s, showMenu: false }
-                    )
-                  );
-                }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </button>
+        {/* Top Image Banner */}
+        <div
+          className="h-40 w-full object-cover"
+          style={{
+            backgroundImage: `url(${randomImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
 
-              {/* Dropdown menu */}
-              {sub.showMenu && (
-                <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                  <button
-                    onClick={() => handleEdit(sub)}
-                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                  >
-                    Update
-                  </button>
-                  <button
-                    onClick={() => handleDelete(sub._id)}
-                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                  >
-                    Delete
-                  </button>
-                </div>
-              )}
+        {/* Content */}
+        <div className="p-6">
+          {/* 3-Dots Menu */}
+          {isOwner && (
+            <div className="absolute top-4 right-4">
+              <div className="relative">
+                <button
+                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSubjects(prev =>
+                      prev.map(s =>
+                        s._id === sub._id
+                          ? { ...s, showMenu: !s.showMenu }
+                          : { ...s, showMenu: false }
+                      )
+                    );
+                  }}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </button>
+
+                {/* Dropdown menu */}
+                {sub.showMenu && (
+                  <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    <button
+                      onClick={() => handleEdit(sub)}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      Update
+                    </button>
+                    <button
+                      onClick={() => handleDelete(sub._id)}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
+          )}
+
+          {/* Subject Name */}
+          <h3 className="font-semibold text-gray-900 text-lg mb-1">{sub.name}</h3>
+
+          {/* Created By */}
+          <p className="text-xs text-gray-400 mb-2">Created by: {sub.createdBy?.name || 'Unknown'}</p>
+
+          {/* Category / Students */}
+          <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+            <span>{sub.category || sub.categoryType}</span>
+            <span className="w-1 h-1 bg-gray-200 rounded-full" />
+            <span>{sub.students || 0} Students</span>
           </div>
-        )}
 
-        {/* Icon / Thumbnail */}
-        <div className={`w-12 h-12 rounded-lg ${sub.bg || 'bg-gray-50'} flex items-center justify-center mb-4 transition-colors`}>
-          <Globe size={24} className={sub.color || 'text-gray-400'} />
+          {/* Last Update */}
+          <div className="text-xs text-gray-400 font-medium flex items-center gap-1">
+            <Clock size={12} /> {sub.updatedAt ? dayjs(sub.updatedAt).fromNow() : 'Just now'}
+          </div>
         </div>
-
-        {/* Subject Name */}
-        <h3 className="font-semibold text-gray-900 text-lg mb-1">{sub.name}</h3>
-
-        {/* Created By */}
-        <p className="text-xs text-gray-400 mb-2">Created by: {sub.createdBy?.name || 'Unknown'}</p>
-
-        {/* Category / Students */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <span>{sub.category || sub.categoryType}</span>
-          <span className="w-1 h-1 bg-gray-200 rounded-full" />
-          <span>{sub.students || 0} Students</span>
-        </div>
-
-        {/* Last Update */}
-        <div className="text-xs text-gray-400 font-medium flex items-center gap-1">
-  <Clock size={12} /> {sub.updatedAt ? dayjs(sub.updatedAt).fromNow() : 'Just now'}
-</div>
       </div>
     );
   })}
