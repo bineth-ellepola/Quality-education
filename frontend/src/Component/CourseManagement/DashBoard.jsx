@@ -95,9 +95,9 @@ const InstructorDashboard = () => {
       {/* --- SIDEBAR --- */}
       <aside className="w-64 bg-white border-r border-gray-100 hidden lg:flex flex-col sticky top-0 h-screen">
         <div className="p-6 flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-inner">
+          {/* <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-inner">
             <GraduationCap className="text-white w-5 h-5" />
-          </div>
+          </div> */}
           <span className="font-semibold tracking-tight text-gray-900">Studly CMS</span>
         </div>
         <nav className="flex-1 px-3 space-y-0.5">
