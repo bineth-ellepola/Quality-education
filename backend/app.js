@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -10,7 +11,7 @@ import courseRoutes from "./Routes/CourseRoute.js";
 import subjectRoute from './Routes/SubjectRoutes.js'
 import userRoutes from './Routes/UserRoutes.js'
 
-dotenv.config();
+  
 
 const app = express();
 const PORT = process.env.PORT || 5050;

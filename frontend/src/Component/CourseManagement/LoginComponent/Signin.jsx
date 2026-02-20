@@ -32,12 +32,17 @@ const Signin = () => {
     setLoading(true);
     try {
       // Replace with your actual endpoint
-      const response = await axios.post("http://localhost:5001/api/users/signin", form);
-      addToast('success', 'Authentication successful. Welcome back!');
-      setUser(response.data.data)
-      const user = response.data.data
-      localStorage.setItem("user", JSON.stringify(user))
-      setTimeout(() => navigate('/dashboard'), 2500);
+     const response = await axios.post("http://localhost:5001/api/users/signin", form);
+const { token, user } = response.data;
+
+addToast('success', 'Authentication successful. Welcome back!');
+setUser(user);
+
+// Store token for future requests
+localStorage.setItem("token", token);
+localStorage.setItem("user", JSON.stringify(user));
+
+setTimeout(() => navigate('/dashboard'), 2500);
     } catch (error) {
       addToast('error', error.response?.data?.message || 'Unauthorized. Please check your credentials.');
     } finally {

@@ -1,36 +1,45 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react'; 
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime);
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutGrid, BookOpen, Users, BarChart3, Plus, Search, 
   GraduationCap, LogOut, Settings, Bell, 
   ChevronRight, X, Layers, Monitor, Globe, Filter,
-  CheckCircle2, Clock, AlertCircle
+  CheckCircle2, Clock, AlertCircle, Edit2, Trash2
 } from 'lucide-react';
 import { useAppContext } from './AppProvider';
+import axios from 'axios';
 
 const InstructorDashboard = () => {
   const navigate = useNavigate();
   const { user, setUser } = useAppContext();
-  
-  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const token = localStorage.getItem('token'); // JWT token
+
+  const [subjects, setSubjects] = useState([]);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('subjects');
-  
-  // Real-world state
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
-  const [subjects, setSubjects] = useState([
-    { id: 1, name: 'Computer Science', category: 'Engineering', students: 120, color: 'text-blue-600', bg: 'bg-blue-50', lastUpdate: '2h ago' },
-    { id: 2, name: 'Digital Arts', category: 'Design', students: 85, color: 'text-orange-600', bg: 'bg-orange-50', lastUpdate: '1d ago' },
-    { id: 3, name: 'Quantum Physics', category: 'Mathematics', students: 42, color: 'text-purple-600', bg: 'bg-purple-50', lastUpdate: '3h ago' }
-  ]);
 
-  const notifications = [
-    { id: 1, title: 'New Student', message: 'Sarah Jenkins enrolled in Computer Science', time: '5m ago', type: 'info' },
-    { id: 2, title: 'Course Review', message: 'You received a 5-star rating on Digital Arts', time: '1h ago', type: 'success' },
-    { id: 3, title: 'System Update', message: 'Studly CMS v2.4 is now live.', time: '4h ago', type: 'alert' },
-  ];
+  // --- Fetch subjects from backend ---
+  const fetchSubjects = async () => {
+    try {
+      const res = await axios.get('http://localhost:5001/api/subjects', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setSubjects(res.data.subjects || []);
+    } catch (err) {
+      console.error('Failed to load subjects', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubjects();
+  }, []);
 
   // --- FILTER LOGIC ---
   const filteredSubjects = useMemo(() => {
@@ -41,29 +50,26 @@ const InstructorDashboard = () => {
     });
   }, [subjects, searchQuery, filterCategory]);
 
-  const [newSubject, setNewSubject] = useState({ name: '', category: 'Engineering' });
-
   const handleLogout = () => {
     localStorage.clear();
     if (setUser) setUser(null);
     navigate('/');
   };
 
-  const handleCreateSubject = (e) => {
-    e.preventDefault();
-    if(!newSubject.name) return;
-    const createdSubject = {
-      id: Date.now(),
-      name: newSubject.name,
-      category: newSubject.category,
-      students: 0,
-      color: 'text-gray-600',
-      bg: 'bg-gray-50',
-      lastUpdate: 'Just now'
-    };
-    setSubjects([...subjects, createdSubject]);
-    setIsModalOpen(false);
-    setNewSubject({ name: '', category: 'Engineering' });
+  const handleCreateSubject = () => navigate('/subject');
+
+  const handleEdit = (sub) => navigate(`/subject/${sub._id}`);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to archive this subject?')) return;
+    try {
+      await axios.delete(`http://localhost:5001/api/subjects/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchSubjects();
+    } catch (err) {
+      console.error('Delete failed', err);
+    }
   };
 
   return (
@@ -77,7 +83,6 @@ const InstructorDashboard = () => {
           </div>
           <span className="font-semibold tracking-tight text-gray-900">Studly CMS</span>
         </div>
-        
         <nav className="flex-1 px-3 space-y-0.5">
           <NavItem icon={<LayoutGrid size={18}/>} label="Dashboard" active />
           <NavItem icon={<Layers size={18}/>} label="Subjects" />
@@ -87,7 +92,6 @@ const InstructorDashboard = () => {
           <NavItem icon={<BarChart3 size={18}/>} label="Reports" />
           <NavItem icon={<Settings size={18}/>} label="Settings" />
         </nav>
-
         <div className="p-4 border-t border-gray-50">
           <button onClick={handleLogout} className="flex items-center gap-3 w-full p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all text-sm font-medium">
             <LogOut size={16} /> Sign out
@@ -130,7 +134,7 @@ const InstructorDashboard = () => {
               </p>
             </div>
             <button 
-              onClick={() => setIsModalOpen(true)}
+              onClick={ handleCreateSubject }
               className="px-4 py-2 bg-gray-900 hover:bg-black text-white rounded-lg text-sm font-medium transition-all shadow-sm flex items-center gap-2"
             >
               <Plus size={16} /> Create Subject
@@ -174,134 +178,97 @@ const InstructorDashboard = () => {
           </div>
 
           {/* DYNAMIC CONTENT */}
-          {activeTab === 'subjects' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-               {filteredSubjects.map(sub => (
-                <div key={sub.id} className="p-6 bg-white border border-gray-100 rounded-xl hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5 transition-all group relative cursor-pointer">
-                   <div className={`w-10 h-10 rounded-lg ${sub.bg} flex items-center justify-center mb-4 transition-colors group-hover:bg-blue-600 group-hover:text-white`}>
-                      <Globe size={20} className={sub.color === 'text-blue-600' ? 'group-hover:text-white' : sub.color} />
-                   </div>
-                   <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">{sub.name}</h3>
-                   <div className="flex items-center gap-3 mt-1">
-                    <span className="text-xs text-gray-400 font-medium">{sub.category}</span>
-                    <span className="w-1 h-1 bg-gray-200 rounded-full" />
-                    <span className="text-xs text-gray-400">{sub.students} Students</span>
-                   </div>
-                   <div className="mt-6 flex items-center justify-between">
-                     <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-medium">
-                        <Clock size={12} /> {sub.lastUpdate}
-                     </div>
-                     <span className="p-1.5 bg-gray-50 rounded-md text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-all">
-                        <ChevronRight size={14} />
-                     </span>
-                   </div>
-                </div>
-               ))}
-               {filteredSubjects.length === 0 && (
-                 <div className="col-span-full py-20 text-center">
-                    <p className="text-gray-400 text-sm">No subjects found matching your criteria.</p>
-                 </div>
-               )}
-            </div>
-          ) : (
-            <div className="bg-white border border-gray-100 rounded-2xl p-20 text-center">
-              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-300">
-                <Monitor size={24} />
-              </div>
-              <h3 className="text-gray-900 font-medium">Coming Soon</h3>
-              <p className="text-gray-400 text-sm mt-1">The {activeTab} feature is currently under development.</p>
-            </div>
-          )}
-        </div>
-      </main>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  {filteredSubjects.map(sub => {
+    const isOwner = sub.createdBy?._id === user._id;
 
-      {/* --- NOTIFICATION PANEL --- */}
-      <AnimatePresence>
-        {isNotifOpen && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsNotifOpen(false)} className="fixed inset-0 bg-black/5 z-[40]" />
-            <motion.div 
-              initial={{ x: 400 }} animate={{ x: 0 }} exit={{ x: 400 }}
-              className="fixed right-0 top-0 bottom-0 w-80 bg-white border-l border-gray-100 z-[50] shadow-2xl p-6 overflow-y-auto"
-            >
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="font-bold text-gray-900">Notifications</h3>
-                <button onClick={() => setIsNotifOpen(false)} className="text-gray-400 hover:text-gray-900 p-1"><X size={20}/></button>
-              </div>
-              <div className="space-y-4">
-                {notifications.map(notif => (
-                  <div key={notif.id} className="p-4 bg-gray-50 rounded-xl border border-gray-100 hover:border-gray-200 transition-colors cursor-pointer group">
-                    <div className="flex gap-3">
-                      <div className="mt-1">
-                        {notif.type === 'success' ? <CheckCircle2 size={16} className="text-emerald-500" /> : 
-                         notif.type === 'alert' ? <AlertCircle size={16} className="text-orange-500" /> : 
-                         <Clock size={16} className="text-blue-500" />}
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-gray-900 leading-tight">{notif.title}</p>
-                        <p className="text-xs text-gray-500 mt-1 leading-snug">{notif.message}</p>
-                        <p className="text-[10px] text-gray-400 mt-2 font-medium">{notif.time}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button className="w-full mt-6 py-2 text-xs font-bold text-blue-600 hover:bg-blue-50 rounded-lg transition-all">Mark all as read</button>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+    return (
+      <div
+        key={sub._id}
+        className="relative p-6 bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-all group"
+      >
+        {/* 3-Dots Menu */}
+        {isOwner && (
+          <div className="absolute top-4 right-4">
+            <div className="relative">
+              <button
+                className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSubjects(prev =>
+                    prev.map(s =>
+                      s._id === sub._id
+                        ? { ...s, showMenu: !s.showMenu }
+                        : { ...s, showMenu: false }
+                    )
+                  );
+                }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </button>
 
-      {/* --- CREATE SUBJECT MODAL --- */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-gray-900/10 backdrop-blur-[2px]" />
-            <motion.div initial={{ opacity: 0, scale: 0.98, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.98, y: 10 }} className="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-lg font-semibold text-gray-900">New Subject</h2>
-                  <p className="text-xs text-gray-500">Categorize your teaching workspace.</p>
-                </div>
-                <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-900"><X size={20} /></button>
-              </div>
-
-              <form onSubmit={handleCreateSubject} className="space-y-5">
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Subject Name</label>
-                  <input 
-                    autoFocus value={newSubject.name} onChange={(e) => setNewSubject({...newSubject, name: e.target.value})}
-                    type="text" placeholder="e.g. Machine Learning" 
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg focus:bg-white focus:border-blue-500 outline-none transition-all text-sm font-medium" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Category Group</label>
-                  <select 
-                    value={newSubject.category} onChange={(e) => setNewSubject({...newSubject, category: e.target.value})}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-100 rounded-lg outline-none text-sm font-medium"
+              {/* Dropdown menu */}
+              {sub.showMenu && (
+                <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                  <button
+                    onClick={() => handleEdit(sub)}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
-                    <option value="Engineering">Engineering</option>
-                    <option value="Mathematics">Mathematics</option>
-                    <option value="Arts & Humanities">Arts & Humanities</option>
-                    <option value="Design">Design</option>
-                  </select>
+                    Update
+                  </button>
+                  <button
+                    onClick={() => handleDelete(sub._id)}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    Delete
+                  </button>
                 </div>
-                <div className="pt-4 flex gap-3">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-2.5 text-sm font-medium text-gray-500 hover:bg-gray-50 rounded-lg transition-colors">Cancel</button>
-                  <button type="submit" className="flex-1 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-all shadow-md">Create Subject</button>
-                </div>
-              </form>
-            </motion.div>
+              )}
+            </div>
           </div>
         )}
-      </AnimatePresence>
+
+        {/* Icon / Thumbnail */}
+        <div className={`w-12 h-12 rounded-lg ${sub.bg || 'bg-gray-50'} flex items-center justify-center mb-4 transition-colors`}>
+          <Globe size={24} className={sub.color || 'text-gray-400'} />
+        </div>
+
+        {/* Subject Name */}
+        <h3 className="font-semibold text-gray-900 text-lg mb-1">{sub.name}</h3>
+
+        {/* Created By */}
+        <p className="text-xs text-gray-400 mb-2">Created by: {sub.createdBy?.name || 'Unknown'}</p>
+
+        {/* Category / Students */}
+        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+          <span>{sub.category || sub.categoryType}</span>
+          <span className="w-1 h-1 bg-gray-200 rounded-full" />
+          <span>{sub.students || 0} Students</span>
+        </div>
+
+        {/* Last Update */}
+        <div className="text-xs text-gray-400 font-medium flex items-center gap-1">
+  <Clock size={12} /> {sub.updatedAt ? dayjs(sub.updatedAt).fromNow() : 'Just now'}
+</div>
+      </div>
+    );
+  })}
+
+  {filteredSubjects.length === 0 && (
+    <div className="col-span-full py-20 text-center">
+      <p className="text-gray-400 text-sm">No subjects found matching your criteria.</p>
+    </div>
+  )}
+</div>
+        </div>
+      </main>
     </div>
   );
 };
 
 // --- MINI SUB-COMPONENTS ---
-
 const NavItem = ({ icon, label, active = false }) => (
   <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all group ${
     active ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm shadow-blue-500/10' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
