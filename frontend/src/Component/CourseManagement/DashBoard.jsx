@@ -13,8 +13,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutGrid, BookOpen, Users, BarChart3, Plus, Search, 
   GraduationCap, LogOut, Settings, Bell, 
-  ChevronRight, X, Layers, Monitor, Globe, Filter,
-  CheckCircle2, Clock, AlertCircle, Edit2, Trash2
+  ChevronRight, X, Layers, Monitor, Clock, Filter
 } from 'lucide-react';
 import { useAppContext } from './AppProvider';
 import axios from 'axios';
@@ -26,10 +25,13 @@ const InstructorDashboard = () => {
   const token = localStorage.getItem('token'); // JWT token
 
   const [subjects, setSubjects] = useState([]);
+  const [subjectsWithImages, setSubjectsWithImages] = useState([]);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('subjects');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
+
+  const bgImages = [img1, img2, img3, img4, img5, img6];
 
   // --- Fetch subjects from backend ---
   const fetchSubjects = async () => {
@@ -37,26 +39,33 @@ const InstructorDashboard = () => {
       const res = await axios.get('http://localhost:5001/api/subjects', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setSubjects(res.data.subjects || []);
+      const fetchedSubjects = res.data.subjects || [];
+
+      // Assign a random image once per subject
+      const subjectsWithRandomImages = fetchedSubjects.map(sub => ({
+        ...sub,
+        randomImage: bgImages[Math.floor(Math.random() * bgImages.length)]
+      }));
+
+      setSubjects(fetchedSubjects);
+      setSubjectsWithImages(subjectsWithRandomImages);
     } catch (err) {
       console.error('Failed to load subjects', err);
     }
   };
-  const bgImages = [img1, img2, img3, img4, img5, img6];
-
 
   useEffect(() => {
     fetchSubjects();
   }, []);
 
   // --- FILTER LOGIC ---
-  const filteredSubjects = useMemo(() => {
-    return subjects.filter(sub => {
+  const filteredSubjectsWithImages = useMemo(() => {
+    return subjectsWithImages.filter(sub => {
       const matchesSearch = sub.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesFilter = filterCategory === 'All' || sub.category === filterCategory;
       return matchesSearch && matchesFilter;
     });
-  }, [subjects, searchQuery, filterCategory]);
+  }, [subjectsWithImages, searchQuery, filterCategory]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -180,107 +189,104 @@ const InstructorDashboard = () => {
 
           {/* TAB SYSTEM */}
           <div className="flex gap-8 border-b border-gray-100 mb-8">
-            <TabButton label="Active Subjects" active={activeTab === 'subjects'} onClick={() => setActiveTab('subjects')} count={filteredSubjects.length} />
+            <TabButton label="Active Subjects" active={activeTab === 'subjects'} onClick={() => setActiveTab('subjects')} count={filteredSubjectsWithImages.length} />
             <TabButton label="Courses" active={activeTab === 'courses'} onClick={() => setActiveTab('courses')} count={0} />
             <TabButton label="Analytics" active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} />
           </div>
 
           {/* DYNAMIC CONTENT */}
-     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  {filteredSubjects.map(sub => {
-    const isOwner = sub.createdBy?._id === user._id;
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredSubjectsWithImages.map(sub => {
+              const isOwner = sub.createdBy?._id === user._id;
 
-    // Random top image
-    const randomImage = bgImages[Math.floor(Math.random() * bgImages.length)];
-
-    return (
-      <div
-        key={sub._id}
-        className="relative bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-all group overflow-hidden"
-      >
-        {/* Top Image Banner */}
-        <div
-          className="h-40 w-full object-cover"
-          style={{
-            backgroundImage: `url(${randomImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-
-        {/* Content */}
-        <div className="p-6">
-          {/* 3-Dots Menu */}
-          {isOwner && (
-            <div className="absolute top-4 right-4">
-              <div className="relative">
-                <button
-                  className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSubjects(prev =>
-                      prev.map(s =>
-                        s._id === sub._id
-                          ? { ...s, showMenu: !s.showMenu }
-                          : { ...s, showMenu: false }
-                      )
-                    );
-                  }}
+              return (
+                <div
+                  key={sub._id}
+                  className="relative bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-all group overflow-hidden"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
-                  </svg>
-                </button>
+                  {/* Top Image Banner */}
+                  <div
+                    className="h-40 w-full object-cover"
+                    style={{
+                      backgroundImage: `url(${sub.randomImage})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                    }}
+                  />
 
-                {/* Dropdown menu */}
-                {sub.showMenu && (
-                  <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                    <button
-                      onClick={() => handleEdit(sub)}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                    >
-                      Update
-                    </button>
-                    <button
-                      onClick={() => handleDelete(sub._id)}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      Delete
-                    </button>
+                  {/* Content */}
+                  <div className="p-6">
+                    {/* 3-Dots Menu */}
+                    {isOwner && (
+                      <div className="absolute top-4 right-4">
+                        <div className="relative">
+                          <button
+                            className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSubjectsWithImages(prev =>
+                                prev.map(s =>
+                                  s._id === sub._id
+                                    ? { ...s, showMenu: !s.showMenu }
+                                    : { ...s, showMenu: false }
+                                )
+                              );
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                          </button>
+
+                          {/* Dropdown menu */}
+                          {sub.showMenu && (
+                            <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                              <button
+                                onClick={() => handleEdit(sub)}
+                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                              >
+                                Update
+                              </button>
+                              <button
+                                onClick={() => handleDelete(sub._id)}
+                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Subject Name */}
+                    <h3 className="font-semibold text-gray-900 text-lg mb-1">{sub.name}</h3>
+
+                    {/* Created By */}
+                    <p className="text-xs text-gray-400 mb-2">Created by: {sub.createdBy?.name || 'Unknown'}</p>
+
+                    {/* Category / Students */}
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                      <span>{sub.category || sub.categoryType}</span>
+                      <span className="w-1 h-1 bg-gray-200 rounded-full" />
+                      <span>{sub.students || 0} Students</span>
+                    </div>
+
+                    {/* Last Update */}
+                    <div className="text-xs text-gray-400 font-medium flex items-center gap-1">
+                      <Clock size={12} /> {sub.updatedAt ? dayjs(sub.updatedAt).fromNow() : 'Just now'}
+                    </div>
                   </div>
-                )}
+                </div>
+              );
+            })}
+
+            {filteredSubjectsWithImages.length === 0 && (
+              <div className="col-span-full py-20 text-center">
+                <p className="text-gray-400 text-sm">No subjects found matching your criteria.</p>
               </div>
-            </div>
-          )}
-
-          {/* Subject Name */}
-          <h3 className="font-semibold text-gray-900 text-lg mb-1">{sub.name}</h3>
-
-          {/* Created By */}
-          <p className="text-xs text-gray-400 mb-2">Created by: {sub.createdBy?.name || 'Unknown'}</p>
-
-          {/* Category / Students */}
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-            <span>{sub.category || sub.categoryType}</span>
-            <span className="w-1 h-1 bg-gray-200 rounded-full" />
-            <span>{sub.students || 0} Students</span>
+            )}
           </div>
-
-          {/* Last Update */}
-          <div className="text-xs text-gray-400 font-medium flex items-center gap-1">
-            <Clock size={12} /> {sub.updatedAt ? dayjs(sub.updatedAt).fromNow() : 'Just now'}
-          </div>
-        </div>
-      </div>
-    );
-  })}
-
-  {filteredSubjects.length === 0 && (
-    <div className="col-span-full py-20 text-center">
-      <p className="text-gray-400 text-sm">No subjects found matching your criteria.</p>
-    </div>
-  )}
-</div>
         </div>
       </main>
     </div>
