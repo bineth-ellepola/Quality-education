@@ -193,6 +193,7 @@ const InstructorDashboard = () => {
             <TabButton label="Courses" active={activeTab === 'courses'} onClick={() => setActiveTab('courses')} count={0} />
             <TabButton label="Analytics" active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} />
           </div>
+          
 
           {/* DYNAMIC CONTENT */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
