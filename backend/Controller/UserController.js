@@ -1,56 +1,73 @@
-const User = require("../Model/UserModel");
+const User = require("../models/User");
+const bcrypt = require("bcryptjs");
 
-/* GET ALL USERS */
-exports.getAllUsers = async (req, res) => {
+
+
+
+// REGISTER USER
+exports.registerUser = async (req, res) => {
   try {
-    const users = await User.find()
-      .populate("role", "role_name");
+    const {
+      first_name,
+      last_name,
+      email,
+      password,
+      role
+    } = req.body;
 
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+    //  Check required fields
+    if (!first_name || !last_name || !email || !password || !role) {
+      return res.status(400).json({
+        message: "All fields are required"
+      });
+    }
 
+    //  Prevent admin self-registration (SECURITY)
+    if (role === "ADMIN") {
+      return res.status(403).json({
+        message: "You cannot register as ADMIN"
+      });
+    }
 
-/* GET SINGLE USER */
-exports.getUserById = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id)
-      .populate("role");
+    //  Check existing user
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Email already registered"
+      });
+    }
 
-    if (!user)
-      return res.status(404).json({ message: "User not found" });
+    //  Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+    //  Create user
+    const newUser = new User({
+      first_name,
+      last_name,
+      email,
+      password: hashedPassword,
+      role
+    });
 
+    await newUser.save();
 
-/* UPDATE USER */
-exports.updateUser = async (req, res) => {
-  try {
-    const updated = await User.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    //  Response
+    res.status(201).json({
+      message: "User registered successfully",
+      user: {
+        id: newUser._id,
+        first_name: newUser.first_name,
+        last_name: newUser.last_name,
+        email: newUser.email,
+        role: newUser.role
+      }
+    });
 
-    res.json(updated);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-
-/* DELETE USER */
-exports.deleteUser = async (req, res) => {
-  try {
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ message: "User deleted" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Server error"
+    });
   }
 };

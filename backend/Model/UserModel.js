@@ -25,8 +25,8 @@ const userSchema = new mongoose.Schema({
   },
 
   role: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Role",
+    type: String,
+    enum: ["ADMIN", "Student", "Instructor"],
     required: true
   },
 
@@ -46,7 +46,7 @@ userSchema.pre("save", async function (next) {
 });
 
 /* Compare password */
-userSchema.methods.comparePassword = async function(password) {
+userSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
