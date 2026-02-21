@@ -1,8 +1,7 @@
 const router = require("express").Router();
 const userController = require("../Controller/UserController");
 
-const auth = require("../middleware/authMiddleware");
-const authorize = require("../middleware/roleMiddleware");
+
 
 router.get("/", auth, userController.getAllUsers);
 router.get("/:id", auth, userController.getUserById);
