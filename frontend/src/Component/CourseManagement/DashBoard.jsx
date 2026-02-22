@@ -26,6 +26,7 @@ const InstructorDashboard = () => {
 
   const [subjects, setSubjects] = useState([]);
   const [subjectsWithImages, setSubjectsWithImages] = useState([]);
+  const [courses, setCourses] = useState([]); 
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('subjects');
   const [searchQuery, setSearchQuery] = useState('');
@@ -54,18 +55,39 @@ const InstructorDashboard = () => {
     }
   };
 
+    // ---------------- FETCH COURSES ----------------
+  const fetchCourses = async () => {
+    try {
+      const res = await axios.get('http://localhost:5001/api/courses?limit=1000', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCourses(res.data.data || []);
+    } catch (err) {
+      console.error('Failed to load courses', err);
+    }
+  };
+
+
   useEffect(() => {
     fetchSubjects();
+    fetchCourses();
   }, []);
 
   // --- FILTER LOGIC ---
-  const filteredSubjectsWithImages = useMemo(() => {
-    return subjectsWithImages.filter(sub => {
-      const matchesSearch = sub.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesFilter = filterCategory === 'All' || sub.category === filterCategory;
-      return matchesSearch && matchesFilter;
-    });
-  }, [subjectsWithImages, searchQuery, filterCategory]);
+   // ---------------- FILTERS ----------------
+   const filteredSubjectsWithImages = useMemo(() => {
+     return subjectsWithImages.filter(sub => {
+       const matchesSearch = sub.name.toLowerCase().includes(searchQuery.toLowerCase());
+       const matchesFilter = filterCategory === 'All' || sub.category === filterCategory;
+       return matchesSearch && matchesFilter;
+     });
+   }, [subjectsWithImages, searchQuery, filterCategory]);
+
+     const filteredCourses = useMemo(() => {
+       return courses.filter(course =>
+         course.title?.toLowerCase().includes(searchQuery.toLowerCase())
+       );
+     }, [courses, searchQuery]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -190,104 +212,189 @@ const InstructorDashboard = () => {
           {/* TAB SYSTEM */}
           <div className="flex gap-8 border-b border-gray-100 mb-8">
             <TabButton label="Active Subjects" active={activeTab === 'subjects'} onClick={() => setActiveTab('subjects')} count={filteredSubjectsWithImages.length} />
-            <TabButton label="Courses" active={activeTab === 'courses'} onClick={() => setActiveTab('courses')} count={0} />
+            <TabButton label="Courses" active={activeTab === 'courses'} onClick={() => setActiveTab('courses')} count={filteredCourses.length} />
             <TabButton label="Analytics" active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} />
           </div>
           
 
           {/* DYNAMIC CONTENT */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredSubjectsWithImages.map(sub => {
-              const isOwner = sub.createdBy?._id === user._id;
+         {/* DYNAMIC CONTENT */}
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  
+  {/* 1. SUBJECTS TAB - Only show if activeTab is 'subjects' */}
+  {activeTab === 'subjects' && (
+    <>
+      {filteredSubjectsWithImages.map(sub => {
+        const isOwner = sub.createdBy?._id === user._id;
+        return (
+          <div
+            key={sub._id}
+            className="relative bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-all group overflow-hidden"
+          >
+            {/* Top Image Banner */}
+            <div
+              className="h-40 w-full object-cover"
+              style={{
+                backgroundImage: `url(${sub.randomImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            />
 
-              return (
-                <div
-                  key={sub._id}
-                  className="relative bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-all group overflow-hidden"
-                >
-                  {/* Top Image Banner */}
-                  <div
-                    className="h-40 w-full object-cover"
-                    style={{
-                      backgroundImage: `url(${sub.randomImage})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                    }}
-                  />
+            {/* Content */}
+            <div className="p-6">
+              {/* 3-Dots Menu */}
+              {isOwner && (
+                <div className="absolute top-4 right-4">
+                  <div className="relative">
+                    <button
+                      className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSubjectsWithImages(prev =>
+                          prev.map(s =>
+                            s._id === sub._id
+                              ? { ...s, showMenu: !s.showMenu }
+                              : { ...s, showMenu: false }
+                          )
+                        );
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </button>
 
-                  {/* Content */}
-                  <div className="p-6">
-                    {/* 3-Dots Menu */}
-                    {isOwner && (
-                      <div className="absolute top-4 right-4">
-                        <div className="relative">
-                          <button
-                            className="p-1 rounded-full hover:bg-gray-100 transition-colors"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSubjectsWithImages(prev =>
-                                prev.map(s =>
-                                  s._id === sub._id
-                                    ? { ...s, showMenu: !s.showMenu }
-                                    : { ...s, showMenu: false }
-                                )
-                              );
-                            }}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                              <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                          </button>
-
-                          {/* Dropdown menu */}
-                          {sub.showMenu && (
-                            <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                              <button
-                                onClick={() => handleEdit(sub)}
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                              >
-                                Update
-                              </button>
-                              <button
-                                onClick={() => handleDelete(sub._id)}
-                                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                    {sub.showMenu && (
+                      <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                        <button onClick={() => handleEdit(sub)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Update</button>
+                        <button onClick={() => handleDelete(sub._id)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Delete</button>
                       </div>
                     )}
-
-                    {/* Subject Name */}
-                    <h3 className="font-semibold text-gray-900 text-lg mb-1">{sub.name}</h3>
-
-                    {/* Created By */}
-                    <p className="text-xs text-gray-400 mb-2">Created by: {sub.createdBy?.name || 'Unknown'}</p>
-
-                    {/* Category / Students */}
-                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                      <span>{sub.category || sub.categoryType}</span>
-                      <span className="w-1 h-1 bg-gray-200 rounded-full" />
-                      <span>{sub.students || 0} Students</span>
-                    </div>
-
-                    {/* Last Update */}
-                    <div className="text-xs text-gray-400 font-medium flex items-center gap-1">
-                      <Clock size={12} /> {sub.updatedAt ? dayjs(sub.updatedAt).fromNow() : 'Just now'}
-                    </div>
                   </div>
                 </div>
-              );
-            })}
+              )}
 
-            {filteredSubjectsWithImages.length === 0 && (
-              <div className="col-span-full py-20 text-center">
-                <p className="text-gray-400 text-sm">No subjects found matching your criteria.</p>
+              <h3 className="font-semibold text-gray-900 text-lg mb-1">{sub.name}</h3>
+              <p className="text-xs text-gray-400 mb-2">Created by: {sub.createdBy?.name || 'Unknown'}</p>
+              
+              <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                <span>{sub.category || sub.categoryType}</span>
+                <span className="w-1 h-1 bg-gray-200 rounded-full" />
+                <span>{sub.students || 0} Students</span>
               </div>
-            )}
+
+              <div className="text-xs text-gray-400 font-medium flex items-center gap-1">
+                <Clock size={12} /> {sub.updatedAt ? dayjs(sub.updatedAt).fromNow() : 'Just now'}
+              </div>
+            </div>
           </div>
+        );
+      })}
+
+      {/* Empty State for Subjects */}
+      {filteredSubjectsWithImages.length === 0 && (
+        <div className="col-span-full py-20 text-center">
+          <p className="text-gray-400 text-sm">No subjects found matching your criteria.</p>
+        </div>
+      )}
+    </>
+  )}
+
+ {activeTab === 'courses' && filteredCourses.map((course) => (
+  <div 
+    key={course._id} 
+    className="group bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden"
+  >
+    {/* IMAGE HEADER */}
+    <div className="relative aspect-video overflow-hidden">
+      <img 
+        src={course.coverImage} 
+        alt={course.title} 
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+      />
+      {/* Floating Price Badge */}
+      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full shadow-sm">
+        <span className="text-sm font-bold text-gray-900">
+          {course.price} {course.currency}
+        </span>
+      </div>
+      {/* Status Badge */}
+      <div className="absolute bottom-4 left-4">
+        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+          course.isPublished 
+            ? 'bg-emerald-500 text-white shadow-emerald-200' 
+            : 'bg-amber-400 text-white shadow-amber-200'
+        } shadow-lg`}>
+          {course.isPublished ? 'Live' : 'Draft'}
+        </span>
+      </div>
+    </div>
+
+    {/* BODY CONTENT */}
+    <div className="p-5 flex flex-col flex-grow">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+          {course.subject?.name}
+        </span>
+        <span className="text-[10px] text-gray-400 font-mono">#{course.courseId}</span>
+      </div>
+
+      <h3 className="font-bold text-gray-900 text-lg line-clamp-1 mb-1 group-hover:text-blue-600 transition-colors">
+        {course.title}
+      </h3>
+      
+      <p className="text-sm text-gray-500 line-clamp-2 mb-4 leading-relaxed">
+        {course.description}
+      </p>
+
+      {/* ATTRIBUTE GRID */}
+      <div className="grid grid-cols-2 gap-y-3 pt-4 border-t border-gray-50 mt-auto">
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase text-gray-400 font-semibold tracking-tight">Instructor</span>
+          <span className="text-xs font-medium text-gray-700 truncate">{course.instructor?.name}</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase text-gray-400 font-semibold tracking-tight">Level</span>
+          <span className="text-xs font-medium text-gray-700">{course.level}</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase text-gray-400 font-semibold tracking-tight">Duration</span>
+          <span className="text-xs font-medium text-gray-700">{course.duration} hrs</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase text-gray-400 font-semibold tracking-tight">Rating</span>
+          <div className="flex items-center gap-1">
+            <span className="text-xs font-bold text-gray-800">{course.averageRating}</span>
+            <span className="text-[10px] text-gray-400 font-normal">({course.totalRatings})</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* FOOTER INFO */}
+    <div className="px-5 py-3 bg-gray-50 flex justify-between items-center border-t border-gray-100">
+      <div className="flex items-center gap-1.5">
+        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+        <span className="text-[11px] font-medium text-gray-600">
+          {course.enrolledStudentsCount} / {course.enrollmentLimit} Enrolled
+        </span>
+      </div>
+      <span className="text-[10px] text-gray-400">
+        {dayjs(course.createdAt).fromNow()}
+      </span>
+    </div>
+  </div>
+))}
+
+  {/* 3. ANALYTICS TAB */}
+  {activeTab === 'analytics' && (
+    <div className="col-span-full py-20 text-center">
+      <p className="text-gray-500">Analytics Dashboard Coming Soon...</p>
+    </div>
+  )}
+
+</div>
         </div>
       </main>
     </div>
