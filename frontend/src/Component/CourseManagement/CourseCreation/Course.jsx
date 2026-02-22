@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useAppContext } from "../AppProvider";
 
 // ─── Inline Styles ────────────────────────────────────────────────────────────
 const css = `
@@ -500,7 +501,7 @@ function CourseDrawer({ course, onClose }) {
     </div>
   );
 }
-
+ 
 // ─── Create Course View ────────────────────────────────────────────────────────
 function CreateCourseView({ subjects, token, instructorId, onSuccess }) {
   const [coverImage, setCoverImage] = useState(null);
@@ -824,6 +825,7 @@ function CourseDashboard() {
 
   const token = localStorage.getItem("token");
   let instructorId = null;
+  const {user} = useAppContext()
   if (token) {
     try {
       const decoded = JSON.parse(atob(token.split(".")[1]));
@@ -861,6 +863,7 @@ function CourseDashboard() {
   ];
 
   const topbarTitles = { overview: "Dashboard", courses: "All Courses", create: "Create New Course" };
+ 
 
   return (
     <>
@@ -869,7 +872,7 @@ function CourseDashboard() {
         {/* Sidebar */}
         <aside className="sidebar">
           <div className="sidebar-logo">
-            <h1>Course<span>.</span>Admin</h1>
+            <h1>Instructor, <span></span>{user?.email}</h1>
           </div>
 
           <div className="nav-label">Navigation</div>
@@ -882,10 +885,10 @@ function CourseDashboard() {
 
           <div className="sidebar-footer">
             <div className="user-chip">
-              <div className="user-avatar">IN</div>
+              <div className="user-avatar">{user?.name ? user.name.slice(0,2).toUpperCase(): "NA"}</div>
               <div>
                 <div className="user-name">Instructor</div>
-                <div className="user-role">Course Manager</div>
+                <div className="user-role">{user?.name || 'unavailble'}</div>
               </div>
             </div>
           </div>
