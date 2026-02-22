@@ -1,7 +1,5 @@
-const User = require("../models/User");
+const User = require("../Model/UserModel");
 const bcrypt = require("bcryptjs");
-
-
 
 
 // REGISTER USER
