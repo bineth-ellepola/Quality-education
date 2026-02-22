@@ -96,6 +96,7 @@ const InstructorDashboard = () => {
   };
 
   const handleCreateSubject = () => navigate('/subject');
+  const handleCourses = ()=> navigate('/course');
 
   const handleEdit = (sub) => navigate(`/subject/${sub._id}`);
 
@@ -177,6 +178,12 @@ const InstructorDashboard = () => {
               className="px-4 py-2 bg-gray-900 hover:bg-black text-white rounded-lg text-sm font-medium transition-all shadow-sm flex items-center gap-2"
             >
               <Plus size={16} /> Create Subject
+            </button>
+             <button 
+              onClick={ handleCourses }
+              className="px-4 py-2 bg-[#849e15] hover:bg-black text-white rounded-lg text-sm font-medium transition-all shadow-sm flex items-center gap-2"
+            >
+              <Plus size={16} /> Create Course
             </button>
           </div>
 
