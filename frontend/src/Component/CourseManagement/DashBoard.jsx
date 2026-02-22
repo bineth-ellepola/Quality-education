@@ -321,13 +321,21 @@ const InstructorDashboard = () => {
       </div>
       {/* Status Badge */}
       <div className="absolute bottom-4 left-4">
-        <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
-          course.isPublished 
-            ? 'bg-emerald-500 text-white shadow-emerald-200' 
-            : 'bg-amber-400 text-white shadow-amber-200'
-        } shadow-lg`}>
-          {course.isPublished ? 'Live' : 'Draft'}
-        </span>
+        <span
+  className={`px-2 py-1 text-xs rounded-full font-medium ${
+    course.status === "published"
+      ? "bg-green-100 text-green-700"
+      : course.status === "draft"
+      ? "bg-yellow-100 text-yellow-700"
+      : "bg-gray-200 text-gray-600"
+  }`}
+>
+  {course.status === "published"
+    ? "Live"
+    : course.status === "draft"
+    ? "Draft"
+    : "Unpublished"}
+</span>
       </div>
     </div>
 

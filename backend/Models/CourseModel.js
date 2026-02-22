@@ -83,11 +83,11 @@ const courseSchema = new mongoose.Schema(
         type: String
       }
     ],
-
-    isPublished: {
-      type: Boolean,
-      default: false
-    },
+status: {
+  type: String,
+  enum: ["draft", "published", "unpublished"],
+  default: "published"
+},
 
     averageRating: {
       type: Number,
