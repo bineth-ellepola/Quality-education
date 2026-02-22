@@ -43,7 +43,8 @@ const courseSchema = new mongoose.Schema(
 
     coverImage: {
       type: String,
-      required: true
+      required: true,
+      publicId: { type: String }
     },
 
     level: {
@@ -105,7 +106,8 @@ status: {
     }
   },
   { timestamps: true }
-);
+  
+  );
 
 const Course = mongoose.model("Course", courseSchema);
 

@@ -1,7 +1,10 @@
 import Course from "../Models/CourseModel.js";
 import Subject from "../Models/SubjectModel.js";
+import streamifier from "streamifier";
+import User from '../Models/UserModel.js'
+import cloudinary from "../Config/cloudinary.js";
 
-// CREATE COURSE
+// CREATE COURSE with Cloudinary
 export const createCourse = async (req, res) => {
   try {
     const {
@@ -10,7 +13,6 @@ export const createCourse = async (req, res) => {
       subject,
       instructor,
       duration,
-      coverImage,
       level,
       price,
       currency,
@@ -19,22 +21,50 @@ export const createCourse = async (req, res) => {
       tags
     } = req.body;
 
-    if (!title || !description || !subject || !instructor || !duration || !coverImage) {
+    // Required fields check
+    if (!title || !description || !subject || !instructor || !duration) {
       return res.status(400).json({ success: false, message: "Required fields are missing" });
     }
 
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "Course cover image is required" });
+    }
+
+    // Validate subject
     const subjectExists = await Subject.findById(subject);
     if (!subjectExists) {
       return res.status(404).json({ success: false, message: "Subject not found" });
     }
 
+    // Validate instructor
+    const userExists = await User.findById(instructor);
+    if (!userExists) {
+      return res.status(404).json({ success: false, message: "Instructor not found" });
+    }
+
+    // Upload cover image to Cloudinary
+    const uploadFromBuffer = (fileBuffer) =>
+      new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "courses" },
+          (error, result) => {
+            if (result) resolve(result);
+            else reject(error);
+          }
+        );
+        streamifier.createReadStream(fileBuffer).pipe(stream);
+      });
+
+    const result = await uploadFromBuffer(req.file.buffer);
+
+    // Create course
     const course = await Course.create({
       title,
       description,
       subject,
       instructor,
       duration,
-      coverImage,
+      coverImage: result.secure_url, // Save Cloudinary URL
       level,
       price,
       currency,

@@ -1,14 +1,15 @@
 import express from "express";
+import upload from '../middlewares/upload.js'
 import * as courseController from "../Controllers/CourseController.js";
 
 const router = express.Router();
 
 // CREATE
-router.post("/courses", courseController.createCourse);
+router.post("/courses",  upload.single("coverImage"),courseController.createCourse);
 
 // READ
 router.get("/courses", courseController.getCourses);
-router.get("/courses/:id", courseController.getSingleCourse);
+router.get("/courses/:id",upload.single("coverImage"), courseController.getSingleCourse);
 
 // UPDATE
 router.put("/courses/:id", courseController.updateCourse);
