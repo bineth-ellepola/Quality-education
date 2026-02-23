@@ -1,7 +1,7 @@
 const Assessment = require("../Model/Assessment");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const s3 = require("../config/s3");
+const s3 = require("../Config/s3");
 
 // Helper to ensure public Supabase URL
 const formatPublicUrl = (url) => {
@@ -39,7 +39,7 @@ const getPresignedUrl = async (req, res) => {
     });
 
     const signedUrl = await getSignedUrl(s3, command, { expiresIn: 3600 });
-    
+
     // The public URL where the file will be accessible after upload
     const projectRef = process.env.AWS_ENDPOINT.split('.')[0].split('//')[1];
     const publicUrl = `https://${projectRef}.supabase.co/storage/v1/object/public/${process.env.AWS_BUCKET_NAME}/${key}`;

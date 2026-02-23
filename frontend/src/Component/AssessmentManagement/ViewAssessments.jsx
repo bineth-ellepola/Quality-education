@@ -6,14 +6,18 @@ import "./Assessment.css";
 function ViewAssessments() {
     const navigate = useNavigate();
     const [assessments, setAssessments] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] = useState(true);
 
-    // Fetch All
     const fetchAssessments = async () => {
         try {
+            setLoading(true);
             const res = await API.get("/assessment");
             setAssessments(res.data);
         } catch (err) {
             console.error(err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -21,7 +25,6 @@ function ViewAssessments() {
         fetchAssessments();
     }, []);
 
-    // Delete
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this assessment?")) {
             try {
@@ -34,54 +37,140 @@ function ViewAssessments() {
         }
     };
 
+    // Filter
+    const filtered = assessments.filter(a =>
+        a.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        a.description?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // Stats
+    const now = new Date();
+    const upcoming = assessments.filter(a => a.dueDate && new Date(a.dueDate) > now).length;
+    const overdue = assessments.filter(a => a.dueDate && new Date(a.dueDate) < now).length;
+
+    const getStatusBadge = (dueDate) => {
+        if (!dueDate) return null;
+        const due = new Date(dueDate);
+        if (due < now) return <span className="badge badge-overdue">Overdue</span>;
+        const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+        if (diffDays <= 3) return <span className="badge badge-upcoming">Due Soon</span>;
+        return <span className="badge badge-completed">Active</span>;
+    };
+
     return (
-        <div className="assessment-container full-width">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', width: '100%' }}>
-                <h2 className="assessment-header" style={{ margin: 0, border: 'none', padding: 0 }}>All Assessments</h2>
+        <div>
+            {/* Header */}
+            <div className="page-header">
+                <div className="page-header-left">
+                    <h2>All Assessments</h2>
+                    <p>Manage and track all your assessments in one place</p>
+                </div>
                 <button className="btn-primary" onClick={() => navigate("/add-assessment")}>
-                    + Add New Assessment
+                    ＋ New Assessment
                 </button>
             </div>
 
+            {/* Stats Cards */}
+            <div className="stat-cards">
+                <div className="stat-card">
+                    <div className="stat-card-header">
+                        <span className="stat-card-label">Total Assessments</span>
+                        <div className="stat-card-icon">📋</div>
+                    </div>
+                    <div className="stat-card-value">{assessments.length}</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-card-header">
+                        <span className="stat-card-label">Upcoming</span>
+                        <div className="stat-card-icon">⏳</div>
+                    </div>
+                    <div className="stat-card-value">{upcoming}</div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-card-header">
+                        <span className="stat-card-label">Overdue</span>
+                        <div className="stat-card-icon">⚠️</div>
+                    </div>
+                    <div className="stat-card-value">{overdue}</div>
+                </div>
+            </div>
+
+            {/* Search */}
+            <div className="search-bar">
+                <span className="search-bar-icon">🔍</span>
+                <input
+                    type="text"
+                    placeholder="Search assessments by title or description..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+
+            {/* Table */}
             <div className="table-container">
-                <table className="assessment-table">
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Description</th>
-                            <th>Marks</th>
-                            <th>Due Date</th>
-                            <th>File</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {assessments.map((a) => (
-                            <tr key={a._id}>
-                                <td style={{ color: '#0f172a', fontWeight: '700' }}>{a.title}</td>
-                                <td style={{ maxWidth: '300px' }}>{a.description || "—"}</td>
-                                <td><span className="badge-marks">{a.totalMarks || "0"} pts</span></td>
-                                <td><strong>{a.dueDate ? new Date(a.dueDate).toLocaleDateString(undefined, { dateStyle: 'medium' }) : "—"}</strong></td>
-                                <td>
-                                    {a.fileUrl ? (
-                                        <a href={`http://localhost:5001/api/assessment/view/${a._id}`} target="_blank" rel="noreferrer" className="file-link">
-                                            📎 {a.fileName || "View Attachment"}
-                                        </a>
-                                    ) : (
-                                        <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>No file</span>
-                                    )}
-                                </td>
-                                <td>
-                                    <div className="table-actions">
-                                        <button onClick={() => navigate(`/edit-assessment/${a._id}`)} className="btn-edit-small">Update</button>
-                                        <button onClick={() => handleDelete(a._id)} className="btn-delete-small">Remove</button>
-                                    </div>
-                                </td>
-                            </tr>
+                {loading ? (
+                    <div style={{ padding: '2rem' }}>
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="skeleton skeleton-input" style={{ marginBottom: '1rem' }}></div>
                         ))}
-                    </tbody>
-                </table>
-                {assessments.length === 0 && <p className="no-data">No assessments found.</p>}
+                    </div>
+                ) : filtered.length > 0 ? (
+                    <table className="assessment-table">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Description</th>
+                                <th>Marks</th>
+                                <th>Due Date</th>
+                                <th>Status</th>
+                                <th>File</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filtered.map((a) => (
+                                <tr key={a._id}>
+                                    <td className="td-title">{a.title}</td>
+                                    <td className="td-description">{a.description || "—"}</td>
+                                    <td><span className="badge-marks">{a.totalMarks || "0"} pts</span></td>
+                                    <td>
+                                        {a.dueDate
+                                            ? new Date(a.dueDate).toLocaleDateString(undefined, { dateStyle: 'medium' })
+                                            : "—"
+                                        }
+                                    </td>
+                                    <td>{getStatusBadge(a.dueDate)}</td>
+                                    <td>
+                                        {a.fileUrl ? (
+                                            <a href={`http://localhost:5001/api/assessment/view/${a._id}`} target="_blank" rel="noreferrer" className="file-link">
+                                                📎 {a.fileName || "View"}
+                                            </a>
+                                        ) : (
+                                            <span className="no-file">No file</span>
+                                        )}
+                                    </td>
+                                    <td>
+                                        <div className="table-actions">
+                                            <button onClick={() => navigate(`/edit-assessment/${a._id}`)} className="btn-edit-small">Edit</button>
+                                            <button onClick={() => handleDelete(a._id)} className="btn-delete-small">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                ) : (
+                    <div className="empty-state">
+                        <div className="empty-state-icon">📝</div>
+                        <h3>No assessments found</h3>
+                        <p>{searchTerm ? "Try a different search term" : "Create your first assessment to get started"}</p>
+                        {!searchTerm && (
+                            <button className="btn-primary" onClick={() => navigate("/add-assessment")}>
+                                ＋ Create Assessment
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );
