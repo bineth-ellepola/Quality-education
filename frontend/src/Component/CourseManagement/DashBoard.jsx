@@ -347,7 +347,7 @@ const InstructorDashboard = () => {
     </div>
 
     {/* BODY CONTENT */}
-    <div className="p-5 flex flex-col flex-grow">
+    <div className="p-5 flex flex-col flex-grow" onClick={()=> navigate(`/courseDetails/${course._id}`)}>
       <div className="flex items-center gap-2 mb-2">
         <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
           {course.subject?.name}
