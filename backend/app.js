@@ -21,7 +21,7 @@ app.use("/api/users", userRoutes);
 const PORT = process.env.PORT || 5000;
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect("mongodb+srv://Admin:4vUdnbBEvwWuFD85@cluster0.kekjoo8.mongodb.net/")
   .then(() => {
     console.log(" MongoDB Connected Successfully");
     app.listen(PORT, () => {
