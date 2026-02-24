@@ -115,7 +115,15 @@ export const getCourses = async (req, res) => {
 export const getSingleCourse = async (req, res) => {
   try {
     const course = await Course.findOne({ _id: req.params.id, isDeleted: false })
-      .populate("subject", "name slug instructor description")
+       .populate({
+    path: "subject",
+    select: "name slug instructor description status isFeatured sortOrder createdBy updatedBy categoryType level code",
+    populate: {
+      path: "createdBy",
+      select: "name email"
+    }
+  })
+      
       .populate("instructor", "name email role");
 
     if (!course) return res.status(404).json({ success: false, message: "Course not found" });

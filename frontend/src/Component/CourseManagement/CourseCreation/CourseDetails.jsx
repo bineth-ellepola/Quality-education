@@ -59,9 +59,9 @@ const CourseDetails = () => {
               </h1>
 
               <div className="flex flex-wrap gap-8 py-6 border-y border-slate-50">
-                <Stat icon={<Clock size={20} />} label="Duration" value={course.duration} />
+                <Stat icon={<Clock size={20} />} label="Duration(hrs)" value={course.duration}   />
                 <Stat icon={<BookOpen size={20} />} label="Subject" value={course.subject?.name} />
-                <Stat icon={<User size={20} />} label="Instructor" value={course.instructor?.name} />
+                <Stat icon={<User size={20} />} label="Instructor(creator)" value={course.instructor?.name} />
               </div>
 
               <div className="mt-10">
@@ -75,25 +75,59 @@ const CourseDetails = () => {
             {/* Detailed Subject & Instructor Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h4 className="text-indigo-600 font-bold text-sm uppercase tracking-widest mb-4">Subject Deep-Dive</h4>
-                <p className="text-slate-800 font-medium mb-2">{course.subject?.description || "Master the core concepts of this field."}</p>
-                <p className="text-sm text-slate-400 font-mono">Internal Ref: {course._id}</p>
+                <h4 className="text-indigo-600 font-bold text-sm uppercase tracking-widest mb-4">Course Deep-Dive</h4>
+                <p className="text-slate-800 font-medium mb-2">{course.description || "Master the core concepts of this field."}</p>
+                <p className="text-sm text-slate-400 font-mono">Internal Course id: {course._id}</p>
+                <p className="text-sm text-slate-400 font-mono">Course Status: {course.status}</p>
+                <p className="text-sm text-slate-400 font-mono">Enrollment Limit: {course.enrollmentLimit} Students</p>
+                <p className="text-sm text-slate-400 font-mono">Course Level: {course.level}  </p>
+                <p className="text-sm text-slate-400 font-mono">Course PreRequests: {course.prerequisites}  </p>
+                <p className="text-sm text-slate-400 font-mono">Course Tags: {course.tags}  </p>
               </div>
 
               <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h4 className="text-indigo-600 font-bold text-sm uppercase tracking-widest mb-4">Instructor</h4>
+                <h4 className="text-indigo-600 font-bold text-sm uppercase tracking-widest mb-4">Course  Instructor</h4>
                 <div className="flex items-center gap-4">
                   <div className="h-12 w-12 bg-slate-900 rounded-full flex items-center justify-center text-white font-bold">
-                    {course.instructor?.name?.charAt(0)}
+                    {course.instructor?.name?.charAt(0,1)}
                   </div>
                   <div>
                     <p className="font-bold text-slate-900">{course.instructor?.name}</p>
                     <p className="text-sm text-slate-500">{course.instructor?.role}</p>
+                    <p className="text-sm text-slate-500">{course.instructor?.email}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                <h4 className="text-indigo-600 font-bold text-sm uppercase tracking-widest mb-4">Subject Deep-Dive</h4>
+                <p className="text-slate-800 font-medium mb-2">{course.subject?.description || "Master the core concepts of this field."}</p>
+                <p className="text-sm text-slate-400 font-mono">Internal Subject id: {course.subject?._id}</p>
+                <p className="text-sm text-slate-400 font-mono">Subject Status: {course.subject?.status}</p>
+                <p className="text-sm text-slate-400 font-mono">Subject Created By: {course?.subject?.createdBy?.name || "NO"} </p>
+                <p className="text-sm text-slate-400 font-mono">Subject Level: {course.subject?.level}  </p>
+                <p className="text-sm text-slate-400 font-mono">Course PreRequests: {course.prerequisites}  </p>
+                <p className="text-sm text-slate-400 font-mono">Course Tags: {course.tags}  </p>
+              </div>
+
+              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                <h4 className="text-indigo-600 font-bold text-sm uppercase tracking-widest mb-4">Subject Instructor</h4>
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 bg-slate-900 rounded-full flex items-center justify-center text-white font-bold">
+                    {course.instructor?.name?.charAt(0,1)}
+                  </div>
+                  <div>
+                    <p className="font-bold text-slate-900">{course.instructor?.name}</p>
+                    <p className="text-sm text-slate-500">{course.instructor?.role}</p>
+                    <p className="text-sm text-slate-500">{course.instructor?.email}</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
+          
 
           {/* Pricing Sidebar */}
           <div className="lg:col-span-1">
@@ -112,6 +146,7 @@ const CourseDetails = () => {
               </div>
             </div>
           </div>
+          <h1>Subject Details : <h3></h3></h1>
 
         </div>
       </div>
