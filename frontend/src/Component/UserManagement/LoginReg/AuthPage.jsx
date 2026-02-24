@@ -22,7 +22,7 @@ const AuthPage = () => {
     });
   };
 
-  // ================= REGISTER =================
+  // ====== REGISTER ========
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -40,7 +40,7 @@ const AuthPage = () => {
     }
   };
 
-  // ================= LOGIN =================
+  // ==== LOGIN =========
   const handleLogin = async (e) => {
     e.preventDefault();
 
