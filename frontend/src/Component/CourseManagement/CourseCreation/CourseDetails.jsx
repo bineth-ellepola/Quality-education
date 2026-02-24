@@ -24,6 +24,7 @@ const CourseDetails = () => {
   }, [id]);
 
   if (loading) return <LoadingState />;
+  const durationInDays = (course.duration / 24).toFixed(1);
 
   return (
     <motion.main 
@@ -74,58 +75,103 @@ const CourseDetails = () => {
 
             {/* Detailed Subject & Instructor Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h4 className="text-indigo-600 font-bold text-sm uppercase tracking-widest mb-4">Course Deep-Dive</h4>
-                <p className="text-slate-800 font-medium mb-2">{course.description || "Master the core concepts of this field."}</p>
-                <p className="text-sm text-slate-400 font-mono">Internal Course id: {course._id}</p>
-                <p className="text-sm text-slate-400 font-mono">Course Status: {course.status}</p>
-                <p className="text-sm text-slate-400 font-mono">Enrollment Limit: {course.enrollmentLimit} Students</p>
-                <p className="text-sm text-slate-400 font-mono">Course Level: {course.level}  </p>
-                <p className="text-sm text-slate-400 font-mono">Course PreRequests: {course.prerequisites}  </p>
-                <p className="text-sm text-slate-400 font-mono">Course Tags: {course.tags}  </p>
-              </div>
+  {/* Left: Course Details */}
+  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="bg-slate-50/80 px-6 py-3 border-b border-slate-200 flex justify-between items-center">
+      <h4 className="text-slate-700 font-bold text-xs uppercase tracking-wider">Course Deep-Dive</h4>
+      <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold uppercase">
+        {course.status}
+      </span>
+    </div>
+    <div className="p-6">
+      <p className="text-slate-900 font-semibold text-lg mb-4 leading-tight">
+        {course.description || "Master the core concepts of this field."}
+      </p>
+      <div className="grid grid-cols-1 gap-3">
+        {[
+          { label: "Internal ID", val: course._id, mono: true },
+          { label: "Limit", val: `${course.enrollmentLimit} Students` },
+          { label: "Level", val: course.level },
+           { label: "Price", val: course.price },
+            { label: "Status", val: course.status },
+             { label: "Duration", val:` ${durationInDays} Days (${course.duration} hrs)` },
+           { label: "Average Ratings", val: course.averageRating },
+            {label: "Total Ratings", val: course.totalRatings },
+          { label: "Prerequisites", val: course.prerequisites || "None" },
+        ].map((item, i) => (
+          <div key={i} className="flex items-center justify-between border-b border-slate-50 pb-2">
+            <span className="text-xs text-slate-500 font-medium">{item.label}</span>
+            <span className={`text-xs ${item.mono ? 'font-mono text-slate-400' : 'text-slate-700 font-semibold'}`}>
+              {item.val}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
 
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h4 className="text-indigo-600 font-bold text-sm uppercase tracking-widest mb-4">Course  Instructor</h4>
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 bg-slate-900 rounded-full flex items-center justify-center text-white font-bold">
-                    {course.instructor?.name?.charAt(0,1)}
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-900">{course.instructor?.name}</p>
-                    <p className="text-sm text-slate-500">{course.instructor?.role}</p>
-                    <p className="text-sm text-slate-500">{course.instructor?.email}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+  {/* Right: Instructor Profile */}
+  <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 flex flex-col justify-between">
+    <h4 className="text-slate-700 font-bold text-xs uppercase tracking-wider mb-6">Course Instructor</h4>
+    <div className="flex items-center gap-5 p-4 bg-indigo-50/30 rounded-xl border border-indigo-100/50">
+      <div className="h-16 w-16 bg-indigo-600 rounded-xl flex items-center justify-center text-white text-2xl font-black shadow-lg shadow-indigo-200">
+        {course.instructor?.name?.charAt(0)}
+      </div>
+      <div>
+        <p className="text-lg font-bold text-slate-900 leading-none">{course.instructor?.name}</p>
+        <p className="text-indigo-600 text-sm font-medium mt-1">{course.instructor?.role}</p>
+        <p className="text-slate-400 text-xs mt-2 font-mono">{course.instructor?.email}</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h4 className="text-indigo-600 font-bold text-sm uppercase tracking-widest mb-4">Subject Deep-Dive</h4>
-                <p className="text-slate-800 font-medium mb-2">{course.subject?.description || "Master the core concepts of this field."}</p>
-                <p className="text-sm text-slate-400 font-mono">Internal Subject id: {course.subject?._id}</p>
-                <p className="text-sm text-slate-400 font-mono">Subject Status: {course.subject?.status}</p>
-                <p className="text-sm text-slate-400 font-mono">Subject Created By: {course?.subject?.createdBy?.name || "NO"} </p>
-                <p className="text-sm text-slate-400 font-mono">Subject Level: {course.subject?.level}  </p>
-                <p className="text-sm text-slate-400 font-mono">Course PreRequests: {course.prerequisites}  </p>
-                <p className="text-sm text-slate-400 font-mono">Course Tags: {course.tags}  </p>
-              </div>
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+  {/* Left Card: Details */}
+  <div className="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+    <div className="border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+      <h4 className="text-slate-900 font-semibold text-sm tracking-tight">Subject Specifications</h4>
+    </div>
+    <div className="p-6 space-y-4">
+      <p className="text-slate-700 text-sm leading-relaxed pb-2 border-b border-slate-50">
+        {course.subject?.description || "Master the core concepts of this field."}
+      </p>
+      <div className="grid grid-cols-1 gap-y-2">
+        {[
+          { label: "Internal ID", value: course.subject?._id },
+          { label: "Status", value: course.subject?.status },
+          { label: "Author", value: course?.subject?.createdBy?.name || "N/A" },
+          { label: "Level", value: course.subject?.level },
+          { label: "Prerequisites", value: course.prerequisites },
+          { label: "Category Type", value: course.subject?.categoryType },
+           { label: "Subject Code", value: course.subject?.code },
+        ].map((item) => (
+          <div key={item.label} className="flex justify-between items-center">
+            <span className="text-xs font-medium text-slate-500 uppercase">{item.label}</span>
+            <span className="text-xs font-mono text-slate-700 bg-slate-100 px-2 py-0.5 rounded">{item.value}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
 
-              <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
-                <h4 className="text-indigo-600 font-bold text-sm uppercase tracking-widest mb-4">Subject Instructor</h4>
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 bg-slate-900 rounded-full flex items-center justify-center text-white font-bold">
-                    {course.instructor?.name?.charAt(0,1)}
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-900">{course.instructor?.name}</p>
-                    <p className="text-sm text-slate-500">{course.instructor?.role}</p>
-                    <p className="text-sm text-slate-500">{course.instructor?.email}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+  {/* Right Card: Instructor */}
+  <div className="bg-white border border-slate-200 rounded-lg shadow-sm p-6">
+    <h4 className="text-slate-900 font-semibold text-sm mb-6">Lead Instructor</h4>
+    <div className="flex items-start gap-4">
+      <div className="h-14 w-14 ring-1 ring-slate-200 p-1 rounded-full">
+        <div className="h-full w-full bg-indigo-50 rounded-full flex items-center justify-center text-indigo-700 font-bold text-lg">
+          {course.instructor?.name?.charAt(0)}
+        </div>
+      </div>
+      <div className="space-y-1">
+        <p className="font-bold text-slate-900 text-base leading-none">{course.instructor?.name}</p>
+        <p className="text-xs font-medium text-indigo-600 uppercase tracking-wider">{course.instructor?.role}</p>
+        <p className="text-sm text-slate-500 italic">{course.instructor?.email}</p>
+      </div>
+    </div>
+  </div>
+</div>
           </div>
           
 
@@ -141,13 +187,13 @@ const CourseDetails = () => {
               
               <div className="mt-8 space-y-4">
                 <Benefit text="Full lifetime access" />
-                <Benefit text="Access on mobile and TV" />
+                <Benefit text="Access on mobile and PC" />
+                 <Benefit text="100% Free access to evryone" />
                 <Benefit text="Certificate of completion" />
               </div>
             </div>
           </div>
-          <h1>Subject Details : <h3></h3></h1>
-
+          
         </div>
       </div>
     </motion.main>
