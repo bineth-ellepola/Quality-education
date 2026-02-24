@@ -171,6 +171,7 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
+//login user
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
