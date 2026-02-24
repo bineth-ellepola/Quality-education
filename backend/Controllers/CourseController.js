@@ -120,11 +120,12 @@ export const getSingleCourse = async (req, res) => {
     select: "name slug instructor description status isFeatured sortOrder createdBy updatedBy categoryType level code",
     populate: {
       path: "createdBy",
-      select: "name email"
+      select: "_id name email"
     }
   })
       
-      .populate("instructor", "name email role");
+      .populate("instructor", "_id name email role");
+      
 
     if (!course) return res.status(404).json({ success: false, message: "Course not found" });
 

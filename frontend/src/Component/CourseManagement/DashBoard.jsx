@@ -54,6 +54,46 @@ const InstructorDashboard = () => {
       console.error('Failed to load subjects', err);
     }
   };
+  
+  //course edit details
+  const handleCourseEdit = (course) => {
+  navigate(`/course/${course._id}`); // adjust if your route is different
+};
+
+const handleCourseDelete = async (id) => {
+  if (!window.confirm('Are you sure you want to delete this course?')) return;
+
+  try {
+    await axios.delete(`http://localhost:5001/api/courses/${id}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    fetchCourses();
+  } catch (err) {
+    console.error('Course delete failed', err);
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // ---------------- FETCH COURSES ----------------
   const fetchCourses = async () => {
@@ -308,18 +348,71 @@ const InstructorDashboard = () => {
     </>
   )}
 
- {activeTab === 'courses' && filteredCourses.map((course) => (
+{/*  Course Area */}
+ {activeTab === 'courses' && filteredCourses.map((course) => {
+  const isOwner = course.instructor?._id === user._id;
+
+  return (
   <div 
     key={course._id} 
     className="group bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden"
   >
     {/* IMAGE HEADER */}
     <div className="relative aspect-video overflow-hidden">
+      {isOwner && (
+  <div className="absolute top-4 left-4 z-50">
+    <div className="relative">
+      <button
+        className="p-1 rounded-full bg-white/80 hover:bg-gray-100 transition-colors"
+        onClick={(e) => {
+          e.stopPropagation();
+          setCourses(prev =>
+            prev.map(c =>
+              c._id === course._id
+                ? { ...c, showMenu: !c.showMenu }
+                : { ...c, showMenu: false }
+            )
+          );
+        }}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      </button>
+
+      {course.showMenu && (
+        <div className="absolute left-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCourseEdit(course);
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            Update
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCourseDelete(course._id);
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+          >
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+      
       <img 
         src={course.coverImage} 
         alt={course.title} 
         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
       />
+
+      
       {/* Floating Price Badge */}
       <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full shadow-sm">
         <span className="text-sm font-bold text-gray-900">
@@ -400,7 +493,7 @@ const InstructorDashboard = () => {
       </span>
     </div>
   </div>
-))}
+)})}
 
   {/* 3. ANALYTICS TAB */}
   {activeTab === 'analytics' && (

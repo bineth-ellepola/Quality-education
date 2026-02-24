@@ -6,6 +6,7 @@ import SubjectCreation from "./Component/CourseManagement/SubjectComponent/Subje
 import SubjectEdit from "./Component/CourseManagement/SubjectComponent/SubjectEdit";
 import Course from './Component/CourseManagement/CourseCreation/Course'
 import CourseDetails from "./Component/CourseManagement/CourseCreation/CourseDetails";
+import CourseEdit from "./Component/CourseManagement/CourseCreation/CourseEdit";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
        <Route path="/subject/:id" element={<SubjectEdit />} />
        <Route path="/course" element={<Course />} />
        <Route path="/courseDetails/:id" element={<CourseDetails />} />
+       <Route path="/course/:id" element={<CourseEdit />} />
     </Routes>
   );
 }
