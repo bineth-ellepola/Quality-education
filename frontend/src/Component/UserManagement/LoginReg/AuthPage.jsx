@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import axios from "axios";
 import "./AuthPage.css";
-
+import { useNavigate } from "react-router-dom";
 const AuthPage = () => {
-
+const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
 
   const [formData, setFormData] = useState({
@@ -54,7 +54,12 @@ const AuthPage = () => {
       );
 
       alert("Login successful");
-
+       
+      if (res.data.user.role === "Student") {
+        navigate("/student-dashboard");
+      } else {
+        navigate("/student/dashboard");
+      } 
       // save user (or token later)
       localStorage.setItem("Student", JSON.stringify(res.data.user));
 
