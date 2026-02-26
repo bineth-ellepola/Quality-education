@@ -12,6 +12,8 @@ function UpdateAssessment() {
         description: "",
         totalMarks: "",
         dueDate: "",
+        fileName: "",
+        fileUrl: "",
     });
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -22,11 +24,22 @@ function UpdateAssessment() {
             try {
                 const res = await API.get(`/assessment/${id}`);
                 const data = res.data;
+                let fetchedFileName = data.fileName || "";
+                if (!fetchedFileName && data.fileUrl) {
+                    // Try to extract filename from URL if it's missing in DB
+                    const parts = data.fileUrl.split('/');
+                    const lastPart = parts.pop();
+                    // If it's a Supabase URL, the last part is usually the filename
+                    fetchedFileName = lastPart.split('?')[0]; // Remove query params if any
+                }
+
                 setFormData({
                     title: data.title || "",
                     description: data.description || "",
                     totalMarks: data.totalMarks || "",
                     dueDate: data.dueDate ? data.dueDate.substring(0, 10) : "",
+                    fileName: fetchedFileName,
+                    fileUrl: data.fileUrl || "",
                 });
             } catch (err) {
                 console.error(err);
@@ -217,13 +230,19 @@ function UpdateAssessment() {
                                         <div className="file-upload-selected">{file.name}</div>
                                         <div className="file-upload-hint">Click to change file</div>
                                     </>
+                                ) : formData.fileName ? (
+                                    <>
+                                        <div className="file-upload-icon">📄</div>
+                                        <div className="file-upload-selected">{formData.fileName}</div>
+                                        <div className="file-upload-hint">Existing file • Click to change</div>
+                                    </>
                                 ) : (
                                     <>
                                         <div className="file-upload-icon">📁</div>
                                         <div className="file-upload-text">
                                             Click to <strong>browse files</strong>
                                         </div>
-                                        <div className="file-upload-hint">Leave empty to keep existing file</div>
+                                        <div className="file-upload-hint">No file attached</div>
                                     </>
                                 )}
                             </div>

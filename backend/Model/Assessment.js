@@ -18,6 +18,9 @@ const assessmentSchema = new mongoose.Schema(
     fileUrl: {
       type: String, // S3 file URL
     },
+    fileName: {
+      type: String, // Original file name
+    },
   },
   { timestamps: true }
 );
