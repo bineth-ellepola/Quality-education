@@ -4,7 +4,6 @@ import "./AuthPage.css";
 import { useNavigate } from "react-router-dom";
 
 const AuthPage = () => {
-
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
 
@@ -13,14 +12,14 @@ const AuthPage = () => {
     last_name: "",
     email: "",
     password: "",
-    role: "Student"
+    role: "Student",
   });
 
   // ================= INPUT CHANGE =================
   const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -31,12 +30,11 @@ const AuthPage = () => {
     try {
       const res = await axios.post(
         "http://localhost:5001/api/users/register",
-        formData
+        formData,
       );
 
       alert(res.data.message);
       setIsLogin(true);
-
     } catch (err) {
       alert(err.response?.data?.message || "Register failed");
     }
@@ -47,13 +45,10 @@ const AuthPage = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post(
-        "http://localhost:5001/api/users/login",
-        {
-          email: formData.email,
-          password: formData.password
-        }
-      );
+      const res = await axios.post("http://localhost:5001/api/users/login", {
+        email: formData.email,
+        password: formData.password,
+      });
 
       const user = res.data.user;
 
@@ -61,24 +56,14 @@ const AuthPage = () => {
 
       // SAVE USER BASED ON ROLE
       if (user.role === "Student") {
-
-        localStorage.setItem(
-          "Student",
-          JSON.stringify(user)
-        );
+        localStorage.setItem("Student", JSON.stringify(user));
 
         navigate("/student-dashboard");
-
       } else if (user.role === "Instructor") {
-
-        localStorage.setItem(
-          "Instructor",
-          JSON.stringify(user)
-        );
+        localStorage.setItem("Instructor", JSON.stringify(user));
 
         navigate("/instructor-dashboard");
       }
-
     } catch (err) {
       alert(err.response?.data?.message || "Login failed");
     }
@@ -88,11 +73,9 @@ const AuthPage = () => {
   return (
     <div className="auth-container">
       <div className="auth-card">
-
         <h2>{isLogin ? "Login" : "Register"}</h2>
 
         <form onSubmit={isLogin ? handleLogin : handleRegister}>
-
           {!isLogin && (
             <>
               <input
@@ -111,11 +94,7 @@ const AuthPage = () => {
                 required
               />
 
-              <select
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-              >
+              <select name="role" value={formData.role} onChange={handleChange}>
                 <option value="Instructor">Instructor</option>
                 <option value="Student">Student</option>
               </select>
@@ -141,18 +120,13 @@ const AuthPage = () => {
           <button type="submit" className="auth-btn">
             {isLogin ? "Login" : "Register"}
           </button>
-
         </form>
 
-        <p
-          className="switch-text"
-          onClick={() => setIsLogin(!isLogin)}
-        >
+        <p className="switch-text" onClick={() => setIsLogin(!isLogin)}>
           {isLogin
             ? "Don't have an account? Register"
             : "Already have an account? Login"}
         </p>
-
       </div>
     </div>
   );
