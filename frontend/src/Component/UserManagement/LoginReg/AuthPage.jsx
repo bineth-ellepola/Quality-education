@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./AuthPage.css";
 import { useNavigate } from "react-router-dom";
+
 const AuthPage = () => {
-const navigate = useNavigate();
+
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
 
   const [formData, setFormData] = useState({
@@ -14,7 +16,7 @@ const navigate = useNavigate();
     role: "Student"
   });
 
-  // handle input change
+  // ================= INPUT CHANGE =================
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -22,7 +24,7 @@ const navigate = useNavigate();
     });
   };
 
-  // ====== REGISTER ========
+  // ================= REGISTER =================
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -40,7 +42,7 @@ const navigate = useNavigate();
     }
   };
 
-  // ==== LOGIN =========
+  // ================= LOGIN =================
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -53,21 +55,36 @@ const navigate = useNavigate();
         }
       );
 
+      const user = res.data.user;
+
       alert("Login successful");
-       
-      if (res.data.user.role === "Student") {
+
+      // SAVE USER BASED ON ROLE
+      if (user.role === "Student") {
+
+        localStorage.setItem(
+          "Student",
+          JSON.stringify(user)
+        );
+
         navigate("/student-dashboard");
-      } else {
-        navigate("/student/dashboard");
-      } 
-      // save user (or token later)
-      localStorage.setItem("Student", JSON.stringify(res.data.user));
+
+      } else if (user.role === "Instructor") {
+
+        localStorage.setItem(
+          "Instructor",
+          JSON.stringify(user)
+        );
+
+        navigate("/instructor-dashboard");
+      }
 
     } catch (err) {
       alert(err.response?.data?.message || "Login failed");
     }
   };
 
+  // ================= UI =
   return (
     <div className="auth-container">
       <div className="auth-card">
@@ -94,7 +111,11 @@ const navigate = useNavigate();
                 required
               />
 
-              <select name="role" onChange={handleChange}>
+              <select
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+              >
                 <option value="Instructor">Instructor</option>
                 <option value="Student">Student</option>
               </select>
@@ -120,6 +141,7 @@ const navigate = useNavigate();
           <button type="submit" className="auth-btn">
             {isLogin ? "Login" : "Register"}
           </button>
+
         </form>
 
         <p

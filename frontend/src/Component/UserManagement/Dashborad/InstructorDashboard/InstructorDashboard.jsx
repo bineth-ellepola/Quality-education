@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "./StudentDashboard.css";
-const StudentDashboard = () => {
+import "./InstructorDashboard.css";
+
+const InstructorDashboard = () => {
 
   const [user, setUser] = useState(null);
   const [editMode, setEditMode] = useState(false);
 
-  const storedUser = JSON.parse(localStorage.getItem("Student"));
+  // get instructor from localStorage
+  const storedUser = JSON.parse(localStorage.getItem("Instructor"));
 
 if (!storedUser) {
   window.location.href = "/";
@@ -80,7 +82,7 @@ if (!storedUser) {
         `http://localhost:5001/api/users/${storedUser.id}`
       );
 
-      localStorage.removeItem("Student");
+      localStorage.removeItem("Instructor");
       alert("Account deleted");
 
       window.location.href = "/";
@@ -93,8 +95,8 @@ if (!storedUser) {
   if (!user) return <h2>Loading...</h2>;
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h1>Student Dashboard</h1>
+    <div className="dashboard-container">
+      <h1>Instructor Dashboard</h1>
 
       {!editMode ? (
         <>
@@ -108,8 +110,8 @@ if (!storedUser) {
           </button>
 
           <button
+            className="delete-btn"
             onClick={handleDelete}
-            style={{ marginLeft: "10px", background: "red", color: "white" }}
           >
             Delete Account
           </button>
@@ -124,7 +126,6 @@ if (!storedUser) {
             onChange={handleChange}
             placeholder="First Name"
           />
-          <br /><br />
 
           <input
             name="last_name"
@@ -132,7 +133,6 @@ if (!storedUser) {
             onChange={handleChange}
             placeholder="Last Name"
           />
-          <br /><br />
 
           <input
             name="email"
@@ -140,7 +140,6 @@ if (!storedUser) {
             onChange={handleChange}
             placeholder="Email"
           />
-          <br /><br />
 
           <input
             type="password"
@@ -149,13 +148,12 @@ if (!storedUser) {
             onChange={handleChange}
             placeholder="New Password (optional)"
           />
-          <br /><br />
 
           <button onClick={handleUpdate}>Save</button>
 
           <button
+            className="cancel-btn"
             onClick={() => setEditMode(false)}
-            style={{ marginLeft: "10px" }}
           >
             Cancel
           </button>
@@ -165,4 +163,4 @@ if (!storedUser) {
   );
 };
 
-export default StudentDashboard;
+export default InstructorDashboard;
