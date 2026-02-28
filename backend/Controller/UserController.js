@@ -1,5 +1,8 @@
 const User = require("../Model/UserModel");
 const bcrypt = require("bcryptjs");
+const cloudinary = require("../config/cloudinary");
+const fs = require("fs");
+const path = require("path");
 
 
 // REGISTER USER
@@ -20,6 +23,13 @@ exports.registerUser = async (req, res) => {
       });
     }
 
+    //  Check if profile picture is provided
+    if (!req.file) {
+      return res.status(400).json({
+        message: "Profile picture is required"
+      });
+    }
+
     //  Prevent admin self-registration (SECURITY)
     if (role === "ADMIN") {
       return res.status(403).json({
@@ -30,8 +40,34 @@ exports.registerUser = async (req, res) => {
     //  Check existing user
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      // Clean up uploaded file if user already exists
+      if (req.file) {
+        fs.unlinkSync(req.file.path);
+      }
       return res.status(400).json({
         message: "Email already registered"
+      });
+    }
+
+    //  Upload profile picture to Cloudinary
+    let profilePictureUrl = null;
+    try {
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "quality-education/profile-pictures",
+        resource_type: "auto"
+      });
+      profilePictureUrl = result.secure_url;
+      
+      // Delete local file after upload
+      fs.unlinkSync(req.file.path);
+    } catch (uploadError) {
+      console.error("Cloudinary upload error:", uploadError);
+      // Clean up local file if upload fails
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      return res.status(500).json({
+        message: "Failed to upload profile picture"
       });
     }
 
@@ -45,7 +81,8 @@ exports.registerUser = async (req, res) => {
       last_name,
       email,
       password,
-      role
+      role,
+      profilePicture: profilePictureUrl
     });
 
     await newUser.save();
@@ -58,12 +95,17 @@ exports.registerUser = async (req, res) => {
         first_name: newUser.first_name,
         last_name: newUser.last_name,
         email: newUser.email,
-        role: newUser.role
+        role: newUser.role,
+        profilePicture: newUser.profilePicture
       }
     });
 
   } catch (error) {
     console.error(error);
+    // Clean up uploaded file in case of error
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
     res.status(500).json({
       message: "Server error"
     });

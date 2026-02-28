@@ -6,13 +6,15 @@ const InstructorDashboard = () => {
 
   const [user, setUser] = useState(null);
   const [editMode, setEditMode] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // get instructor from localStorage
   const storedUser = JSON.parse(localStorage.getItem("Instructor"));
 
-if (!storedUser) {
-  window.location.href = "/";
-}
+  if (!storedUser) {
+    window.location.href = "/";
+  }
+
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -20,7 +22,7 @@ if (!storedUser) {
     password: ""
   });
 
-  // ================= LOAD USER =================
+  //  LOAD USER 
   useEffect(() => {
     fetchUser();
   }, []);
@@ -38,13 +40,15 @@ if (!storedUser) {
         email: res.data.email,
         password: ""
       });
+      setLoading(false);
 
     } catch (err) {
       console.error(err);
+      setLoading(false);
     }
   };
 
-  // ================= INPUT CHANGE =================
+  //  INPUT CHANGE 
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -52,7 +56,7 @@ if (!storedUser) {
     });
   };
 
-  // ================= UPDATE USER =================
+  //  UPDATE USER 
   const handleUpdate = async () => {
     try {
       await axios.put(
@@ -69,10 +73,10 @@ if (!storedUser) {
     }
   };
 
-  // ================= DELETE ACCOUNT =================
+  //  DELETE ACCOUNT 
   const handleDelete = async () => {
     const confirmDelete = window.confirm(
-      "Are you sure you want to delete your account?"
+      "Are you sure you want to delete your account? This action cannot be undone."
     );
 
     if (!confirmDelete) return;
@@ -83,8 +87,7 @@ if (!storedUser) {
       );
 
       localStorage.removeItem("Instructor");
-      alert("Account deleted");
-
+      alert("Account deleted successfully");
       window.location.href = "/";
 
     } catch (err) {
@@ -92,73 +95,193 @@ if (!storedUser) {
     }
   };
 
-  if (!user) return <h2>Loading...</h2>;
+  //  LOGOUT 
+  const handleLogout = () => {
+    localStorage.removeItem("Instructor");
+    window.location.href = "/";
+  };
+
+  if (loading) return <div className="loading-spinner">Loading...</div>;
+  if (!user) return <h2>Failed to load user</h2>;
 
   return (
-    <div className="dashboard-container">
-      <h1>Instructor Dashboard</h1>
-
-      {!editMode ? (
-        <>
-          <p><b>First Name:</b> {user.first_name}</p>
-          <p><b>Last Name:</b> {user.last_name}</p>
-          <p><b>Email:</b> {user.email}</p>
-          <p><b>Role:</b> {user.role}</p>
-
-          <button onClick={() => setEditMode(true)}>
-            Edit Profile
+    <div className="dashboard-wrapper">
+      <div className="dashboard-container">
+        {/* Header */}
+        <div className="dashboard-header">
+          <div className="header-content">
+            <h1>Instructor Dashboard</h1>
+            <p>Manage your teaching profile</p>
+          </div>
+          <button className="logout-btn" onClick={handleLogout}>
+            Logout
           </button>
+        </div>
 
-          <button
-            className="delete-btn"
-            onClick={handleDelete}
-          >
-            Delete Account
-          </button>
-        </>
-      ) : (
-        <>
-          <h3>Edit Details</h3>
+        {/* Main Content */}
+        <div className="dashboard-content">
+          {!editMode ? (
+            <>
+              {/* Profile Card */}
+              <div className="profile-card">
+                <div className="profile-header">
+                  <div className="profile-picture-large">
+                    {user.profilePicture ? (
+                      <img src={user.profilePicture} alt="Profile" />
+                    ) : (
+                      <div className="profile-placeholder">
+                        {user.first_name.charAt(0)}{user.last_name.charAt(0)}
+                      </div>
+                    )}
+                  </div>
+                  <div className="profile-info">
+                    <h2>{user.first_name} {user.last_name}</h2>
+                    <p className="role-badge">{user.role}</p>
+                    <p className="email">{user.email}</p>
+                  </div>
+                </div>
 
-          <input
-            name="first_name"
-            value={formData.first_name}
-            onChange={handleChange}
-            placeholder="First Name"
-          />
+                <div className="profile-details">
+                  <div className="detail-row">
+                    <span className="detail-label">First Name:</span>
+                    <span className="detail-value">{user.first_name}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Last Name:</span>
+                    <span className="detail-value">{user.last_name}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Email:</span>
+                    <span className="detail-value">{user.email}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Account Status:</span>
+                    <span className="detail-value status-active">
+                      {user.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-label">Joined:</span>
+                    <span className="detail-value">
+                      {new Date(user.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
 
-          <input
-            name="last_name"
-            value={formData.last_name}
-            onChange={handleChange}
-            placeholder="Last Name"
-          />
+                <div className="profile-actions">
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={() => setEditMode(true)}
+                  >
+                    ✎ Edit Profile
+                  </button>
+                  <button 
+                    className="btn btn-danger" 
+                    onClick={handleDelete}
+                  >
+                    🗑 Delete Account
+                  </button>
+                </div>
+              </div>
 
-          <input
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Email"
-          />
+              {/* Stats Cards */}
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-icon">📚</div>
+                  <div className="stat-content">
+                    <h3>Courses</h3>
+                    <p>0 courses created</p>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">👥</div>
+                  <div className="stat-content">
+                    <h3>Students</h3>
+                    <p>0 total students</p>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon">⭐</div>
+                  <div className="stat-content">
+                    <h3>Rating</h3>
+                    <p>No reviews yet</p>
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Edit Form */}
+              <div className="edit-card">
+                <h3>Edit Your Profile</h3>
+                
+                <div className="form-group">
+                  <label>First Name</label>
+                  <input
+                    type="text"
+                    name="first_name"
+                    value={formData.first_name}
+                    onChange={handleChange}
+                    placeholder="First Name"
+                    className="form-input"
+                  />
+                </div>
 
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="New Password (optional)"
-          />
+                <div className="form-group">
+                  <label>Last Name</label>
+                  <input
+                    type="text"
+                    name="last_name"
+                    value={formData.last_name}
+                    onChange={handleChange}
+                    placeholder="Last Name"
+                    className="form-input"
+                  />
+                </div>
 
-          <button onClick={handleUpdate}>Save</button>
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Email"
+                    className="form-input"
+                  />
+                </div>
 
-          <button
-            className="cancel-btn"
-            onClick={() => setEditMode(false)}
-          >
-            Cancel
-          </button>
-        </>
-      )}
+                <div className="form-group">
+                  <label>New Password (optional)</label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Leave empty to keep current password"
+                    className="form-input"
+                  />
+                </div>
+
+                <div className="form-actions">
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={handleUpdate}
+                  >
+                    Save Changes
+                  </button>
+                  <button 
+                    className="btn btn-secondary" 
+                    onClick={() => setEditMode(false)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

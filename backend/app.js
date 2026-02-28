@@ -3,6 +3,8 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const fs = require("fs");
+const path = require("path");
 // After app.use(express.json());
 
 const userRoutes = require("../backend/Route/UserRoute");
@@ -12,8 +14,15 @@ dotenv.config();
 
 const app = express();
 
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
 app.use(cors());
 app.use(express.json()); 
+app.use(express.urlencoded({ limit: "50mb", extended: true })); 
 
 
 
