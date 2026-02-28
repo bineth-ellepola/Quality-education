@@ -107,12 +107,12 @@ setTimeout(() => navigate('/dashboard'), 2500);
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
             <div className="mb-6 flex items-center gap-3">
-              <div className="h-1 w-12 bg-indigo-500 rounded-full" />
-              <span className="text-sm font-bold uppercase tracking-[0.3em] text-indigo-400">Enterprise Edition</span>
+              <div className="h-1 w-12 bg-white rounded-full" />
+              <span className="text-sm font-bold uppercase tracking-[0.3em] text-white">Enterprise Edition</span>
             </div>
             <h1 className="text-6xl font-extrabold leading-[1.1] tracking-tight">
               Manage your <br />
-              <span className="text-indigo-400">digital assets</span> <br />
+              <span className="text-[#3f7d20]">Teaching ability</span> <br />
               like a pro.
             </h1>
             <p className="mt-8 text-xl text-slate-300 max-w-md font-medium leading-relaxed">
@@ -131,7 +131,7 @@ setTimeout(() => navigate('/dashboard'), 2500);
           className="w-full max-w-sm"
         >
           <div className="mb-12">
-            <h2 className="text-4xl font-black text-slate-900 tracking-tighter">Sign In</h2>
+            <h2 className="text-4xl font-black text-[#3f7d20] tracking-tighter">Sign In</h2>
             <p className="text-slate-500 mt-3 font-medium">Please enter your credentials to continue.</p>
           </div>
 
@@ -154,7 +154,7 @@ setTimeout(() => navigate('/dashboard'), 2500);
             <div className="space-y-2">
               <div className="flex justify-between items-center ml-1">
                 <label className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">Password</label>
-                <button type="button" className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors">Forgot?</button>
+                <button type="button" className="text-xs font-bold text-[#03045e] hover:text-indigo-800 transition-colors">Forgot?</button>
               </div>
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
@@ -164,7 +164,7 @@ setTimeout(() => navigate('/dashboard'), 2500);
                   required
                   placeholder="••••••••"
                   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-0 focus:border-indigo-600 outline-none transition-all placeholder:text-slate-400 font-medium"
+                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-0 focus:border-[#03045e] outline-none transition-all placeholder:text-slate-400 font-medium"
                 />
               </div>
             </div>
@@ -172,7 +172,7 @@ setTimeout(() => navigate('/dashboard'), 2500);
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-slate-900 hover:bg-indigo-600 text-white font-bold py-4 rounded-2xl shadow-xl shadow-slate-200 transition-all flex items-center justify-center gap-2 active:scale-[0.97] disabled:opacity-70 disabled:active:scale-100"
+              className="w-full bg-blue-600 hover:bg-[#000000] text-white font-bold py-4 rounded-2xl shadow-xl shadow-slate-200 transition-all flex items-center justify-center gap-2 active:scale-[0.97] disabled:opacity-70 disabled:active:scale-100"
             >
               {loading ? (
                 <Loader2 className="w-6 h-6 animate-spin" />
@@ -198,7 +198,7 @@ setTimeout(() => navigate('/dashboard'), 2500);
 
           <p className="text-center mt-12 text-sm text-slate-500 font-medium">
             Not registered yet? 
-            <button className="ml-2 font-bold text-indigo-600 hover:text-indigo-700 underline underline-offset-4">Create Account</button>
+            <button className="ml-2 font-bold text-blue-600 hover:text-indigo-700 underline underline-offset-4">Create Account</button>
           </p>
         </motion.div>
       </div>

@@ -7,6 +7,7 @@ import {
   ArrowUpRight, Filter, Grid, List
 } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import s1 from '../../../assets/s1.mp3'
 
 /* ─── Design tokens ─────────────────────────────── */
 const C = {
@@ -274,6 +275,8 @@ const SubjectCreation = () => {
         addToast('success', 'Subject updated');
       } else {
         await axios.post('http://localhost:5001/api/subjects', form, { headers: { Authorization: `Bearer ${token}` } });
+        const audio = new Audio(s1); // path to your sound file
+        audio.play().catch(err => console.error('Audio play failed:', err));
         addToast('success', 'Subject published');
       }
       resetForm(); fetchSubjects(); setIsDrawerOpen(false);

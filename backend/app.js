@@ -10,6 +10,7 @@ import { connectDB } from "./Config/DB.js";
 import courseRoutes from "./Routes/CourseRoute.js";
 import subjectRoute from './Routes/SubjectRoutes.js'
 import userRoutes from './Routes/UserRoutes.js'
+import noticeRoute from './Routes/NoticeRoutes.js'
 
   
 
@@ -56,6 +57,7 @@ app.get("/", (req, res) => {
 app.use("/api", courseRoutes);
 app.use("/api/subjects", subjectRoute);
 app.use("/api/users", userRoutes);
+app.use("/api/notice", noticeRoute)
 
 
  

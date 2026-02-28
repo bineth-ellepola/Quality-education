@@ -12,7 +12,7 @@ router.get("/courses", courseController.getCourses);
 router.get("/courses/:id",upload.single("coverImage"), courseController.getSingleCourse);
 
 // UPDATE
-router.put("/courses/:id", courseController.updateCourse);
+router.put("/courses/:id", upload.single("coverImage"),courseController.updateCourse);
 
 // PUBLISH / UNPUBLISH
 router.patch("/courses/:id/toggle-publish", courseController.togglePublishCourse);

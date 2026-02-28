@@ -7,6 +7,8 @@ import SubjectEdit from "./Component/CourseManagement/SubjectComponent/SubjectEd
 import Course from './Component/CourseManagement/CourseCreation/Course'
 import CourseDetails from "./Component/CourseManagement/CourseCreation/CourseDetails";
 import CourseEdit from "./Component/CourseManagement/CourseCreation/CourseEdit";
+import CourseLeader from './Component/CourseManagement/CourseCreation/CourseLeader'
+import Notice from './Component/CourseManagement/NoticeManagement/NoticePage'
 
 function App() {
   return (
@@ -17,8 +19,10 @@ function App() {
        <Route path="/subject" element={<SubjectCreation />} />
        <Route path="/subject/:id" element={<SubjectEdit />} />
        <Route path="/course" element={<Course />} />
+       <Route path="/notice" element={<Notice />} />
        <Route path="/courseDetails/:id" element={<CourseDetails />} />
        <Route path="/course/:id" element={<CourseEdit />} />
+       <Route path="/instructors/:id" element={<CourseLeader />} />
     </Routes>
   );
 }

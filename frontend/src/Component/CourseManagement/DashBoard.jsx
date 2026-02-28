@@ -1,14 +1,16 @@
-import React, { useState, useMemo, useEffect } from 'react'; 
+ 
+import React, { useState, useMemo, useEffect,useRef } from 'react'; 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 import { useNavigate } from 'react-router-dom';
-import img1 from '../../assets/img1.svg';
-import img2 from '../../assets/img2.svg';
-import img3 from '../../assets/img3.svg';
-import img4 from '../../assets/img4.svg';
-import img5 from '../../assets/img5.svg';
-import img6 from '../../assets/img6.svg';
+import img1 from '../../assets/im1.jpg';
+import img2 from '../../assets/im2.jpg';
+import img3 from '../../assets/im3.jpg';
+import img4 from '../../assets/im4.jpg';
+import img5 from '../../assets/im5.jpg';
+import img6 from '../../assets/im6.jpg';
+import s1 from '../../assets/ss2.mp3'
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutGrid, BookOpen, Users, BarChart3, Plus, Search, 
@@ -24,15 +26,23 @@ const InstructorDashboard = () => {
 
   const token = localStorage.getItem('token'); // JWT token
 
+
+const [notices, setNotices] = useState([]);
+const [loadingNotices, setLoadingNotices] = useState(false);
+const [isNotifOpen, setIsNotifOpen] = useState(false);
+
+
   const [subjects, setSubjects] = useState([]);
   const [subjectsWithImages, setSubjectsWithImages] = useState([]);
   const [courses, setCourses] = useState([]); 
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  
   const [activeTab, setActiveTab] = useState('subjects');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');
-
+const notificationSound = useRef(null);
   const bgImages = [img1, img2, img3, img4, img5, img6];
+
+  
 
   // --- Fetch subjects from backend ---
   const fetchSubjects = async () => {
@@ -75,9 +85,30 @@ const handleCourseDelete = async (id) => {
 
 
 
+ // Inside InstructorDashboard component
 
+// --- FETCH NOTICES ---
+const fetchNotices = async () => {
+  setLoadingNotices(true);
+  try {
+    const res = await axios.get('http://localhost:5001/api/notice/all', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setNotices(res.data.data || []);
+  } catch (err) {
+    console.error('Failed to load notices', err);
+  } finally {
+    setLoadingNotices(false);
+  }
+};
 
+// Fetch notices on mount
+useEffect(() => {
+  fetchNotices();
+}, []);
 
+ 
+ 
 
 
 
@@ -153,32 +184,37 @@ const handleCourseDelete = async (id) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#FBFBFB] text-[#1A1A1A] font-sans selection:bg-blue-100 overflow-hidden">
-      
-      {/* --- SIDEBAR --- */}
-      <aside className="w-64 bg-white border-r border-gray-100 hidden lg:flex flex-col sticky top-0 h-screen">
-        <div className="p-6 flex items-center gap-3">
-          {/* <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-inner">
-            <GraduationCap className="text-white w-5 h-5" />
-          </div> */}
-          <span className="font-semibold tracking-tight text-gray-900">Studly CMS</span>
-        </div>
-        <nav className="flex-1 px-3 space-y-0.5">
-          <NavItem icon={<LayoutGrid size={18}/>} label="Dashboard" active />
-          <NavItem icon={<Layers size={18}/>} label="Subjects" />
-          <NavItem icon={<BookOpen size={18}/>} label="Curriculum" />
-          <NavItem icon={<Users size={18}/>} label="Students" />
-          <div className="my-4 border-t border-gray-50 mx-3" />
-          <NavItem icon={<BarChart3 size={18}/>} label="Reports" />
-          <NavItem icon={<Settings size={18}/>} label="Settings" />
-        </nav>
-        <div className="p-4 border-t border-gray-50">
-          <button onClick={handleLogout} className="flex items-center gap-3 w-full p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all text-sm font-medium">
-            <LogOut size={16} /> Sign out
-          </button>
-        </div>
-      </aside>
+    <div className="flex min-h-screen bg-[#FBFBFB] text-[#1A1A1A] font-sans selection:bg-green-600 selection:text-white overflow-hidden">
+  
+  {/* --- SIDEBAR --- */}
+  <aside className="w-64 bg-white border-r border-gray-100 hidden lg:flex flex-col sticky top-0 h-screen">
+    
+    <div className="p-6 flex items-center gap-3">
+      <span className="font-semibold tracking-tight text-gray-900">
+        Studly CMS
+      </span>
+    </div>
 
+    <nav className="flex-1 px-3 space-y-0.5">
+      <NavItem icon={<LayoutGrid size={18} />} label="Dashboard" active />
+      <NavItem icon={<Layers size={18} />} label="Subjects" />
+      <NavItem icon={<BookOpen size={18} />} label="Curriculum" />
+      <NavItem icon={<Users size={18} />} label="Students" />
+      <div className="my-4 border-t border-gray-50 mx-3" />
+      <NavItem icon={<BarChart3 size={18} />} label="Reports" />
+      <NavItem icon={<Settings size={18} />} label="Settings" />
+    </nav>
+
+    <div className="p-4 border-t border-gray-50">
+      <button
+        onClick={handleLogout}
+        className="flex items-center gap-3 w-full p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all text-sm font-medium"
+      >
+        <LogOut size={16} /> Sign out
+      </button>
+    </div>
+  </aside>
+ 
       {/* --- CONTENT AREA --- */}
       <main className="flex-1 h-screen overflow-y-auto">
         <header className="h-16 bg-white/50 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-30 px-8 flex items-center justify-between">
@@ -189,13 +225,55 @@ const handleCourseDelete = async (id) => {
           </div>
           
           <div className="flex items-center gap-5">
-            <button 
-              onClick={() => setIsNotifOpen(true)}
-              className="text-gray-400 hover:text-gray-900 transition-colors relative p-2"
-            >
-              <Bell size={20} strokeWidth={1.5} />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full border-2 border-white" />
-            </button>
+            <div className="relative">
+  <button 
+    onClick={() => {
+      setIsNotifOpen(prev => {
+        const willOpen = !prev; // compute the new state
+        if (willOpen && notificationSound.current) {
+          // Play sound only when opening the notifications dropdown
+          notificationSound.current.play().catch(err => console.log(err));
+        }
+        return willOpen;
+      });
+    }}
+    className="text-gray-400 hover:text-gray-900 transition-colors relative p-2"
+  >
+    <Bell size={20} strokeWidth={1.5} />
+    {notices.length > 0 && (
+      <span className="absolute top-2 right-2 w-2 h-2 bg-blue-500 rounded-full border-2 border-white" />
+    )}
+  </button>
+
+  {/* Audio element for notification sound */}
+  <audio ref={notificationSound} src={s1} preload="auto" />
+
+  {/* NOTICES DROPDOWN */}
+  <AnimatePresence>
+    {isNotifOpen && (
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"
+      >
+        {loadingNotices ? (
+          <div className="p-4 text-center text-gray-400">Loading notices...</div>
+        ) : notices.length === 0 ? (
+          <div className="p-4 text-center text-gray-400">No new notices.</div>
+        ) : (
+          notices.map(notice => (
+            <div key={notice._id} className="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer">
+              <p className="text-sm font-medium text-gray-800">{notice.title}</p>
+              <p className="text-xs text-gray-500">{notice.message}</p>
+              <p className="text-[10px] text-gray-400 mt-1">{dayjs(notice.createdAt).fromNow()}</p>
+            </div>
+          ))
+        )}
+      </motion.div>
+    )}
+  </AnimatePresence>
+</div>
             <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 overflow-hidden">
               <img src={`https://ui-avatars.com/api/?name=${user?.name || 'Instructor'}&background=ebebeb&color=1a1a1a`} alt="user" />
             </div>
@@ -206,8 +284,8 @@ const handleCourseDelete = async (id) => {
           {/* WELCOME SECTION */}
           <div className="flex justify-between items-start mb-10">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900 tracking-tight">
-                Welcome back, {user?.name || 'Instructor'}
+              <h1 className="text-2xl font-semibold text-[#3f7d20] tracking-tight">
+                Welcome back, <span className='text-black '>{user?.name || 'Instructor'} </span>
               </h1>
               <p className="text-gray-500 text-sm mt-1 font-normal">
                 Everything looks good. You have <span className="text-blue-600 font-medium">{subjects.length} active subjects</span>.
@@ -221,7 +299,7 @@ const handleCourseDelete = async (id) => {
             </button>
              <button 
               onClick={ handleCourses }
-              className="px-4 py-2 bg-[#849e15] hover:bg-black text-white rounded-lg text-sm font-medium transition-all shadow-sm flex items-center gap-2"
+              className="px-4 py-2 bg-[#3f7d20] hover:bg-black text-white rounded-lg text-sm font-medium transition-all shadow-sm flex items-center gap-2"
             >
               <Plus size={16} /> Create Course
             </button>
@@ -512,7 +590,7 @@ const handleCourseDelete = async (id) => {
 // --- MINI SUB-COMPONENTS ---
 const NavItem = ({ icon, label, active = false }) => (
   <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all group ${
-    active ? 'bg-blue-50 text-blue-600 font-semibold shadow-sm shadow-blue-500/10' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+    active ? 'bg-black-50 text-[#3f7d20] font-semibold shadow-sm shadow-blue-500/10' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
   }`}>
     <span className={`${active ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`}>{icon}</span>
     <span className="text-sm">{label}</span>
