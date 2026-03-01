@@ -1,0 +1,24 @@
+{
+  "name": "quality-education",
+  "version": "1.0.0",
+  "description": "A web application that support adult learners to complete secondary education online.",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm start --prefix backend",
+    "dev": "npm run dev --prefix frontend",
+    "dev:all": "npm start --prefix backend & npm run dev --prefix frontend",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bineth-ellepola/Quality-education.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/bineth-ellepola/Quality-education/issues"
+  },
+  "homepage": "https://github.com/bineth-ellepola/Quality-education#readme"
+}
