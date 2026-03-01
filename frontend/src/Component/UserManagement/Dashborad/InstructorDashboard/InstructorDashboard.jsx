@@ -173,13 +173,13 @@ const InstructorDashboard = () => {
                     className="btn btn-primary" 
                     onClick={() => setEditMode(true)}
                   >
-                    ✎ Edit Profile
+                     Edit Profile
                   </button>
                   <button 
                     className="btn btn-danger" 
                     onClick={handleDelete}
                   >
-                    🗑 Delete Account
+                     Delete Account
                   </button>
                 </div>
               </div>
@@ -187,21 +187,18 @@ const InstructorDashboard = () => {
               {/* Stats Cards */}
               <div className="stats-grid">
                 <div className="stat-card">
-                  <div className="stat-icon">📚</div>
                   <div className="stat-content">
                     <h3>Courses</h3>
                     <p>0 courses created</p>
                   </div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-icon">👥</div>
                   <div className="stat-content">
                     <h3>Students</h3>
                     <p>0 total students</p>
                   </div>
                 </div>
                 <div className="stat-card">
-                  <div className="stat-icon">⭐</div>
                   <div className="stat-content">
                     <h3>Rating</h3>
                     <p>No reviews yet</p>

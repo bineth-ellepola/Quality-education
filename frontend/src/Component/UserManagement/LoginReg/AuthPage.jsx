@@ -119,7 +119,7 @@ const AuthPage = () => {
         localStorage.setItem("Instructor", JSON.stringify(user));
         navigate("/instructor-dashboard");
       } else if (user.role === "ADMIN") {
-        localStorage.setItem("Admin", JSON.stringify(user));
+        localStorage.setItem("ADMIN", JSON.stringify(user));
         navigate("/admin-dashboard");
       }
     } catch (err) {
@@ -129,14 +129,13 @@ const AuthPage = () => {
     }
   };
 
-  //  UI 
+
   return (
     <div className="auth-container">
       {/* Left Section - Marketing */}
       <div className="auth-left">
         <div className="auth-brand">
-          <div className="brand-icon">📚</div>
-          <h1 className="brand-name">Quality Education</h1>
+          <h1 className="brand-name">StudLY</h1>
         </div>
 
         <div className="auth-content">
@@ -164,10 +163,10 @@ const AuthPage = () => {
               "Quality Education makes learning seamless. The platform is intuitive and the courses are always up to date."
             </div>
             <div className="testimonial-user">
-              <div className="user-avatar">JD</div>
+              <div className="user-avatar">BE</div>
               <div className="user-info">
-                <div className="user-name">Johnson Davis</div>
-                <div className="user-role">Student, University</div>
+                <div className="user-name">Bineth Ellepola</div>
+                <div className="user-role">Student, SLIIT</div>
               </div>
             </div>
           </div>
@@ -204,7 +203,6 @@ const AuthPage = () => {
                       className="file-input"
                     />
                     <label htmlFor="profilePicture" className="file-input-label">
-                      <span className="file-icon">📷</span>
                       {profilePreview ? "Change Picture" : "Choose Picture"}
                     </label>
                   </div>
@@ -244,7 +242,6 @@ const AuthPage = () => {
                 </div>
 
                 <div className="input-group">
-                  <span className="input-icon">🎓</span>
                   <select
                     name="role"
                     value={formData.role}

@@ -15,7 +15,7 @@ const AdminDashboard = () => {
     });
     const [searchTerm, setSearchTerm] = useState("");
 
-    const storedUser = JSON.parse(localStorage.getItem("Admin"));
+    const storedUser = JSON.parse(localStorage.getItem("ADMIN"));
 
     if (!storedUser) {
         window.location.href = "/";
@@ -108,7 +108,7 @@ const AdminDashboard = () => {
     return (
         <div className="admin-wrapper">
             <div className="admin-container">
-                {/* Header */}
+                
                 <div className="admin-header">
                     <div className="header-content">
                         <h1>Admin Dashboard</h1>
@@ -119,7 +119,7 @@ const AdminDashboard = () => {
                     </button>
                 </div>
 
-                {/* Stats Section */}
+                
                 <div className="stats-section">
                     <div className="stat-box">
                         <div className="stat-number">{users.length}</div>
@@ -139,7 +139,7 @@ const AdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Search Bar */}
+            
                 <div className="search-section">
                     <input
                         type="text"
