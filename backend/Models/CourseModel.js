@@ -1,11 +1,11 @@
-// models/Course.js
+ 
 
 import mongoose from "mongoose";
 import { nanoid } from "nanoid";
 
 const courseSchema = new mongoose.Schema(
   {
-    // Custom readable course ID (ex: CRS-8F3K9L)
+    
     courseId: {
       type: String,
       unique: true,
@@ -15,13 +15,17 @@ const courseSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
+       minlength: [3, "Title must be at least 3 characters"],
+      maxlength: [100, "Title cannot exceed 100 characters"]
     },
 
     description: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
+       minlength: [10, "Description must be at least 10 characters"],
+      maxlength: [2000, "Description too long"]
     },
 
     subject: {
@@ -38,7 +42,9 @@ const courseSchema = new mongoose.Schema(
 
     duration: {
       type: Number,
-      required: true
+      required: true,
+      min: [1, "Duration must be at least 1 hour"],
+      max: [500, "Duration seems too large"]
     },
 
     coverImage: {
@@ -103,7 +109,30 @@ status: {
     isDeleted: {
       type: Boolean,
       default: false
-    }
+    },
+ 
+
+deletedAt: {
+  type: Date,
+  default: null
+},
+
+deleteReason: {
+  type: String,
+  default: null
+},
+
+deletedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  default: null
+},
+
+// Admin control
+isPermanentlyDeleted: {
+  type: Boolean,
+  default: false
+}
   },
   { timestamps: true }
   

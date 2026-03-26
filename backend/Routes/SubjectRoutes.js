@@ -12,18 +12,14 @@ import { protect } from "../middlewares/authMiddleware.js";
 const router = express.Router();
 
 
-// ==============================
-// PUBLIC ROUTES
-// ==============================
+ 
 
 // Anyone can view subjects
 router.get("/", getSubjects);
 router.get("/:id", getSubjectById);
 
 
-// ==============================
-// INSTRUCTOR ROUTES
-// ==============================
+ 
 
 // Create subject (only instructors)
 router.post("/", protect, createSubject);

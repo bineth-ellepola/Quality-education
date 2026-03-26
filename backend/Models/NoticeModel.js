@@ -2,10 +2,10 @@ import mongoose from "mongoose";
 
 const noticeSchema = new mongoose.Schema(
   {
-    course: {
+     course: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",
-      required: true
+      required: [true, "Course is required"]
     },
     instructor: {
       type: mongoose.Schema.Types.ObjectId,
@@ -20,7 +20,7 @@ const noticeSchema = new mongoose.Schema(
     description: {
       type: String,
       required: true,
-      trim: true
+      
     },
     attachments: [
       {

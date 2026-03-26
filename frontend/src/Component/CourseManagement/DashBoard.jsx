@@ -24,12 +24,15 @@ const InstructorDashboard = () => {
   const navigate = useNavigate();
   const { user, setUser } = useAppContext();
 
-  const token = localStorage.getItem('token'); // JWT token
+  const token = localStorage.getItem('token');
 
 
 const [notices, setNotices] = useState([]);
 const [loadingNotices, setLoadingNotices] = useState(false);
 const [isNotifOpen, setIsNotifOpen] = useState(false);
+const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+const [selectedCourseId, setSelectedCourseId] = useState(null);
+const [deleteReason, setDeleteReason] = useState("");
 
 
   const [subjects, setSubjects] = useState([]);
@@ -44,7 +47,7 @@ const notificationSound = useRef(null);
 
   
 
-  // --- Fetch subjects from backend ---
+  
   const fetchSubjects = async () => {
     try {
       const res = await axios.get('http://localhost:5001/api/subjects', {
@@ -70,24 +73,52 @@ const notificationSound = useRef(null);
   navigate(`/course/${course._id}`); // adjust if your route is different
 };
 
-const handleCourseDelete = async (id) => {
-  if (!window.confirm('Are you sure you want to delete this course?')) return;
+// const handleCourseDelete = async (id) => {
+//   if (!window.confirm('Are you sure you want to delete this course?')) return;
+
+//   try {
+//     await axios.delete(`http://localhost:5001/api/courses/${id}`, {
+//       headers: { Authorization: `Bearer ${token}` }
+//     });
+//     fetchCourses();
+//   } catch (err) {
+//     console.error('Course delete failed', err);
+//   }
+// };
+const handleCourseDelete = (id) => {
+  setSelectedCourseId(id);
+  setDeleteModalOpen(true);
+};
+
+const confirmDeleteCourse = async () => {
+  if (!deleteReason.trim()) {
+    alert("Please provide a reason");
+    return;
+  }
 
   try {
-    await axios.delete(`http://localhost:5001/api/courses/${id}`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+    await axios.delete(
+      `http://localhost:5001/api/courses/${selectedCourseId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { reason: deleteReason } // 🔥 IMPORTANT
+      }
+    );
+
+    setDeleteModalOpen(false);
+    setDeleteReason("");
+    setSelectedCourseId(null);
+
     fetchCourses();
+
   } catch (err) {
-    console.error('Course delete failed', err);
+    console.error("Course delete failed", err);
   }
 };
 
+ 
 
-
- // Inside InstructorDashboard component
-
-// --- FETCH NOTICES ---
+ 
 const fetchNotices = async () => {
   setLoadingNotices(true);
   try {
@@ -125,8 +156,7 @@ useEffect(() => {
 
 
 
-
-    // ---------------- FETCH COURSES ----------------
+ 
   const fetchCourses = async () => {
     try {
       const res = await axios.get('http://localhost:5001/api/courses?limit=1000', {
@@ -143,6 +173,11 @@ useEffect(() => {
     fetchSubjects();
     fetchCourses();
   }, []);
+
+  const handleNoticeClick = (noticeId) => {
+  setIsNotifOpen(false); // close dropdown
+  navigate(`/notices/${noticeId}`); // go to notice details page
+};
 
   // --- FILTER LOGIC ---
    // ---------------- FILTERS ----------------
@@ -186,7 +221,7 @@ useEffect(() => {
   return (
     <div className="flex min-h-screen bg-[#FBFBFB] text-[#1A1A1A] font-sans selection:bg-green-600 selection:text-white overflow-hidden">
   
-  {/* --- SIDEBAR --- */}
+ 
   <aside className="w-64 bg-white border-r border-gray-100 hidden lg:flex flex-col sticky top-0 h-screen">
     
     <div className="p-6 flex items-center gap-3">
@@ -262,13 +297,25 @@ useEffect(() => {
         ) : notices.length === 0 ? (
           <div className="p-4 text-center text-gray-400">No new notices.</div>
         ) : (
-          notices.map(notice => (
-            <div key={notice._id} className="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer">
-              <p className="text-sm font-medium text-gray-800">{notice.title}</p>
-              <p className="text-xs text-gray-500">{notice.message}</p>
-              <p className="text-[10px] text-gray-400 mt-1">{dayjs(notice.createdAt).fromNow()}</p>
-            </div>
-          ))
+         notices.map(notice => (
+  <div
+    key={notice._id}
+    onClick={() => handleNoticeClick(notice._id)}
+    className="p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+  >
+    <p className="text-sm font-medium text-gray-800">
+      {notice.title}
+    </p>
+
+    <p className="text-xs text-gray-500 line-clamp-2">
+      {notice.description}
+    </p>
+
+    <p className="text-[10px] text-gray-400 mt-1">
+      {dayjs(notice.createdAt).fromNow()}
+    </p>
+  </div>
+))
         )}
       </motion.div>
     )}
@@ -417,7 +464,7 @@ useEffect(() => {
         );
       })}
 
-      {/* Empty State for Subjects */}
+      
       {filteredSubjectsWithImages.length === 0 && (
         <div className="col-span-full py-20 text-center">
           <p className="text-gray-400 text-sm">No subjects found matching your criteria.</p>
@@ -435,7 +482,7 @@ useEffect(() => {
     key={course._id} 
     className="group bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden"
   >
-    {/* IMAGE HEADER */}
+     
     <div className="relative aspect-video overflow-hidden">
       {isOwner && (
   <div className="absolute top-4 left-4 z-50">
@@ -491,13 +538,13 @@ useEffect(() => {
       />
 
       
-      {/* Floating Price Badge */}
+      
       <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full shadow-sm">
         <span className="text-sm font-bold text-gray-900">
           {course.price} {course.currency}
         </span>
       </div>
-      {/* Status Badge */}
+      
       <div className="absolute bottom-4 left-4">
         <span
   className={`px-2 py-1 text-xs rounded-full font-medium ${
@@ -516,8 +563,7 @@ useEffect(() => {
 </span>
       </div>
     </div>
-
-    {/* BODY CONTENT */}
+ 
     <div className="p-5 flex flex-col flex-grow" onClick={()=> navigate(`/courseDetails/${course._id}`)}>
       <div className="flex items-center gap-2 mb-2">
         <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
@@ -534,7 +580,7 @@ useEffect(() => {
         {course.description}
       </p>
 
-      {/* ATTRIBUTE GRID */}
+       
       <div className="grid grid-cols-2 gap-y-3 pt-4 border-t border-gray-50 mt-auto">
         <div className="flex flex-col">
           <span className="text-[10px] uppercase text-gray-400 font-semibold tracking-tight">Instructor</span>
@@ -558,7 +604,7 @@ useEffect(() => {
       </div>
     </div>
 
-    {/* FOOTER INFO */}
+    
     <div className="px-5 py-3 bg-gray-50 flex justify-between items-center border-t border-gray-100">
       <div className="flex items-center gap-1.5">
         <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
@@ -573,7 +619,7 @@ useEffect(() => {
   </div>
 )})}
 
-  {/* 3. ANALYTICS TAB */}
+ 
   {activeTab === 'analytics' && (
     <div className="col-span-full py-20 text-center">
       <p className="text-gray-500">Analytics Dashboard Coming Soon...</p>
@@ -582,12 +628,54 @@ useEffect(() => {
 
 </div>
         </div>
+        {deleteModalOpen && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+      
+      <h2 className="text-lg font-semibold mb-2 text-gray-900">
+        Delete Course
+      </h2>
+      
+      <p className="text-sm text-gray-500 mb-4">
+        Please provide a reason for deleting this course.
+      </p>
+
+      <textarea
+        value={deleteReason}
+        onChange={(e) => setDeleteReason(e.target.value)}
+        placeholder="Enter reason..."
+        className="w-full border border-gray-200 rounded-lg p-3 text-sm outline-none focus:ring-2 focus:ring-red-200"
+        rows={4}
+      />
+
+      <div className="flex justify-end gap-3 mt-5">
+        <button
+          onClick={() => {
+            setDeleteModalOpen(false);
+            setDeleteReason("");
+          }}
+          className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={confirmDeleteCourse}
+          className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg"
+        >
+          Delete
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
       </main>
     </div>
   );
 };
 
-// --- MINI SUB-COMPONENTS ---
+ 
 const NavItem = ({ icon, label, active = false }) => (
   <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all group ${
     active ? 'bg-black-50 text-[#3f7d20] font-semibold shadow-sm shadow-blue-500/10' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'

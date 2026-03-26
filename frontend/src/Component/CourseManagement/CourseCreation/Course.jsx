@@ -18,11 +18,11 @@ const css = `
     --ink-3:     #A8A49D;
     --accent:    #849e15;
     --accent-lt: #EBF1FD;
-    --green:     #ff5b22;
-    --green-lt:  #DCFCE7;
-    --amber:     #D97706;
+    --green:     #ffffff;
+    --green-lt:  #f80909;
+    --amber:     #1f1d1b;
     --amber-lt:  #FEF3C7;
-    --red:       #DC2626;
+    --red:       #e61717;
     --red-lt:    #FEE2E2;
     --radius:    10px;
     --shadow:    0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
@@ -267,7 +267,7 @@ const css = `
     margin-bottom: 16px;
   }
   .alert-error { background: var(--red-lt); color: var(--red); border: 1px solid #fca5a5; }
-  .alert-success { background: var(--green-lt); color: var(--green); border: 1px solid #86efac; }
+  .alert-success { background: var(--green-lt); color: var(--green); border: 1px solid #050505; }
 
   /* ─── Course Cards ─────────────────────────────────────────── */
   .courses-list { display: flex; flex-direction: column; gap: 1px; background: var(--border); border-radius: var(--radius); overflow: hidden; }

@@ -5,7 +5,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import rateLimit from "express-rate-limit";
-
+import path from "path";
 import { connectDB } from "./Config/DB.js";
 import courseRoutes from "./Routes/CourseRoute.js";
 import subjectRoute from './Routes/SubjectRoutes.js'
@@ -20,13 +20,13 @@ const PORT = process.env.PORT || 5050;
  
 await connectDB();
 
- 
+//setting various http headers
 app.use(helmet());
 
  
 app.use(
   cors({
-    origin: "*", // Change to frontend URL in production
+    origin: "*", 
     credentials: true,
   })
 );
@@ -35,10 +35,11 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Logger
+// Logger middleware
 app.use(morgan("dev"));
 
 // Rate limiting (Anti abuse protection)
+//A single IP can send maximum 200 requests in 15 minutes
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 200,
@@ -59,7 +60,7 @@ app.use("/api/subjects", subjectRoute);
 app.use("/api/users", userRoutes);
 app.use("/api/notice", noticeRoute)
 
-
+app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
  
 
 

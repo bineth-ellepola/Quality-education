@@ -4,7 +4,7 @@ import path from "path";
 // Storage setup
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Make sure this folder exists
+    cb(null, "uploads/");  
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
   },
 });
 
-// File filter (optional)
+ 
 const fileFilter = (req, file, cb) => {
   cb(null, true); // allow all files
 };

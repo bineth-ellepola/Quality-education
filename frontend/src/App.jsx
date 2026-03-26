@@ -9,20 +9,26 @@ import CourseDetails from "./Component/CourseManagement/CourseCreation/CourseDet
 import CourseEdit from "./Component/CourseManagement/CourseCreation/CourseEdit";
 import CourseLeader from './Component/CourseManagement/CourseCreation/CourseLeader'
 import Notice from './Component/CourseManagement/NoticeManagement/NoticePage'
+import NoticeDetails from './Component/CourseManagement/NoticeManagement/Notice'
+import AdminDashboard from './Component/CourseManagement/AdminDashboard'
+import Home from './Pages/Home'
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+      
        <Route path="/subject" element={<SubjectCreation />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/instructor" element={<Dashboard />} />
        <Route path="/subject/:id" element={<SubjectEdit />} />
        <Route path="/course" element={<Course />} />
        <Route path="/notice" element={<Notice />} />
        <Route path="/courseDetails/:id" element={<CourseDetails />} />
        <Route path="/course/:id" element={<CourseEdit />} />
        <Route path="/instructors/:id" element={<CourseLeader />} />
+       <Route path="/notices/:id" element={<NoticeDetails />} />
     </Routes>
   );
 }

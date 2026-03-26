@@ -6,55 +6,83 @@ const subjectSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
+      required: [true, "Subject name is required"],
       trim: true,
-      maxlength: 100
+      minlength: [3, "Subject name must be at least 3 characters"],
+      maxlength: [100, "Subject name cannot exceed 100 characters"]
     },
 
     slug: {
       type: String,
-      required: true,
+      required: [true, "Slug is required"],
       unique: true,
       lowercase: true,
-      trim: true
+      trim: true,
+      match: [
+        /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+        "Slug must be URL friendly (lowercase letters, numbers and hyphens only)"
+      ]
     },
 
     code: {
       type: String,
       unique: true,
-      sparse: true // allows null but enforces uniqueness if exists
+      sparse: true,
+      trim: true,
+      minlength: [2, "Code must be at least 2 characters"],
+      maxlength: [20, "Code cannot exceed 20 characters"],
+      match: [
+        /^[A-Z0-9-]+$/,
+        "Code can only contain uppercase letters, numbers and hyphens"
+      ]
     },
 
     description: {
       type: String,
       trim: true,
-      maxlength: 1000
+      minlength: [10, "Description must be at least 10 characters"],
+      maxlength: [1000, "Description cannot exceed 1000 characters"]
     },
 
     thumbnail: {
-      type: String // Cloudinary URL
+      type: String,
+      trim: true,
+      match: [
+        /^(https?:\/\/.*\.(?:png|jpg|jpeg|webp|svg))$/i,
+        "Thumbnail must be a valid image URL"
+      ]
     },
 
     level: {
       type: String,
-      enum: ["beginner", "intermediate", "advanced", "all"],
+      enum: {
+        values: ["beginner", "intermediate", "advanced", "all"],
+        message: "Invalid level type"
+      },
       default: "all"
     },
 
     categoryType: {
       type: String,
-      enum: ["academic", "professional", "skill-based"],
+      enum: {
+        values: ["academic", "professional", "skill-based"],
+        message: "Invalid category type"
+      },
       default: "skill-based"
     },
 
     totalCourses: {
       type: Number,
-      default: 0
+      default: 0,
+      min: [0, "Total courses cannot be negative"]
     },
 
     status: {
       type: String,
-      enum: ["active", "inactive", "archived"],
+      enum: {
+        values: ["active", "inactive", "archived"],
+        message: "Invalid status"
+      },
       default: "active"
     },
 
@@ -65,23 +93,36 @@ const subjectSchema = new mongoose.Schema(
 
     sortOrder: {
       type: Number,
-      default: 0
+      default: 0,
+      min: [0, "Sort order cannot be negative"]
     },
 
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
+      ref: "User",
+      validate: {
+        validator: function (value) {
+          return mongoose.Types.ObjectId.isValid(value);
+        },
+        message: "Invalid createdBy user ID"
+      }
     },
 
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User"
+      ref: "User",
+      validate: {
+        validator: function (value) {
+          return mongoose.Types.ObjectId.isValid(value);
+        },
+        message: "Invalid updatedBy user ID"
+      }
     }
   },
   { timestamps: true }
 );
 
-// Indexes
+// indexes
 subjectSchema.index({ name: "text", description: "text" });
 
 const Subject = mongoose.model("Subject", subjectSchema);

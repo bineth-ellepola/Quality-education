@@ -4,7 +4,7 @@ import streamifier from "streamifier";
 import User from '../Models/UserModel.js'
 import cloudinary from "../Config/cloudinary.js";
 
-// CREATE COURSE with Cloudinary
+ 
 export const createCourse = async (req, res) => {
   try {
     const {
@@ -173,17 +173,63 @@ export const togglePublishCourse = async (req, res) => {
   }
 };
 
-// DELETE COURSE (SOFT DELETE)
+/// DELETE COURSE (SOFT DELETE) — assign deletedBy as creator if no auth
 export const deleteCourse = async (req, res) => {
   try {
-    const course = await Course.findOne({ _id: req.params.id, isDeleted: false });
-    if (!course) return res.status(404).json({ success: false, message: "Course not found" });
+    const { reason } = req.body;
 
+    if (!reason || reason.trim() === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Delete reason is required"
+      });
+    }
+
+    const course = await Course.findOne({ _id: req.params.id, isDeleted: false });
+
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found" });
+    }
+
+    // Soft delete
     course.isDeleted = true;
+    course.deletedAt = new Date();
+    course.deleteReason = reason;
+
+    // Assign deletedBy as course creator if no auth
+    course.deletedBy = course.instructor;
+
     await course.save();
 
-    res.status(200).json({ success: true, message: "Course deleted successfully" });
+    res.status(200).json({
+      success: true,
+      message: "Course soft deleted successfully",
+      data: course
+    });
   } catch (error) {
+    console.error(error); // log real error for debugging
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+// DELETE COURSE PERMANENTLY (ADMIN)
+export const deleteCoursePermanently = async (req, res) => {
+  try {
+    const course = await Course.findOne({ _id: req.params.id, isDeleted: true });
+
+    if (!course) {
+      return res.status(404).json({ success: false, message: "Course not found or not soft deleted" });
+    }
+
+    await Course.deleteOne({ _id: req.params.id });
+
+    res.status(200).json({
+      success: true,
+      message: "Course permanently deleted successfully"
+    });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

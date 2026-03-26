@@ -4,9 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 
-// ==============================
-// CREATE USER (REGISTER)
-// ==============================
+ 
 export const createUser = async (req, res) => {
   try {
     const { name, email, role, password } = req.body;
@@ -17,6 +15,8 @@ export const createUser = async (req, res) => {
         message: "Name, email, and password are required"
       });
     }
+
+    
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -51,9 +51,8 @@ export const createUser = async (req, res) => {
 
 
 
-// ==============================
-// SIGN IN (WITH JWT)
-// ==============================
+// jwt sign in
+ 
 export const signInUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -81,7 +80,7 @@ export const signInUser = async (req, res) => {
       });
     }
 
-    // 🔥 Generate JWT
+   // generate
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,
@@ -108,9 +107,7 @@ export const signInUser = async (req, res) => {
   }
 };
 
-// ==============================
-// GET USER BY ID
-// ==============================
+ 
 export const getUserById = async (req, res) => {
   try {
     const { id } = req.params;

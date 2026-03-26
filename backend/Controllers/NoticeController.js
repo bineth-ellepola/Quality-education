@@ -20,9 +20,9 @@ export const createNotice = async (req, res) => {
 
     // Handle uploaded files (attachments)
     const attachments = (req.files || []).map(file => ({
-      url: file.path, // or wherever your multer stores the file
-      filename: file.originalname,
-    }));
+  url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
+  filename: file.originalname,
+}));
 
     const notice = await Notice.create({
       course: courseId,
@@ -40,7 +40,7 @@ export const createNotice = async (req, res) => {
   }
 };
 
-// GET ALL NOTICES FOR A COURSE
+ 
 export const getNoticesByCourse = async (req, res) => {
   try {
     const { courseId } = req.params;
@@ -55,7 +55,7 @@ export const getNoticesByCourse = async (req, res) => {
   }
 };
 
-// GET SINGLE NOTICE
+ 
 export const getNoticeById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -71,13 +71,12 @@ export const getNoticeById = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
-// GET ALL NOTICES (no course filter)
+ 
 export const getAllNotices = async (req, res) => {
   try {
     const notices = await Notice.find({ isPublished: true })
       .populate("instructor", "_id name email role")
-      .populate("course", "title courseId") // optional: include course info
+      .populate("course", "title courseId") 
       .sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, data: notices });

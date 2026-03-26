@@ -28,32 +28,41 @@ const Signin = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      // Replace with your actual endpoint
-     const response = await axios.post("http://localhost:5001/api/users/signin", form);
-const { token, user } = response.data;
+  e.preventDefault();
+  setLoading(true);
+  try {
+    const response = await axios.post("http://localhost:5001/api/users/signin", form);
+    const { token, user } = response.data;
 
-addToast('success', 'Authentication successful. Welcome back!');
-setUser(user);
+    addToast('success', 'Authentication successful. Welcome back!');
+    setUser(user);
 
-// Store token for future requests
-localStorage.setItem("token", token);
-localStorage.setItem("user", JSON.stringify(user));
+    // Store token and user in localStorage
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(user));
 
-setTimeout(() => navigate('/dashboard'), 2500);
-    } catch (error) {
-      addToast('error', error.response?.data?.message || 'Unauthorized. Please check your credentials.');
-    } finally {
-      setLoading(false);
-    }
-  };
+    // Redirect based on role
+    setTimeout(() => {
+      if (user.role === "admin") {
+        navigate("/admin");
+      } else if (user.role === "instructor") {
+        navigate("/instructor");
+      } else {
+        navigate("/"); // fallback
+      }
+    }, 2500);
+
+  } catch (error) {
+    addToast('error', error.response?.data?.message || 'Unauthorized. Please check your credentials.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="flex min-h-screen bg-white font-sans selection:bg-indigo-100">
       
-      {/* --- REAL WORLD STACKED NOTIFICATIONS (Bottom-Right) --- */}
+       
       <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 w-full max-w-sm">
         <AnimatePresence>
           {toasts.map((toast) => (
@@ -90,14 +99,14 @@ setTimeout(() => navigate('/dashboard'), 2500);
         </AnimatePresence>
       </div>
 
-      {/* --- LEFT SIDE: THE IMAGE & OVERLAY --- */}
+    
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-900">
         <img 
           src={s3}
           alt="Professional Background"
           className="absolute inset-0 w-full h-full object-cover opacity-90"
         />
-        {/* Dark overlay for text readability */}
+         
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
         
         <div className="relative z-10 flex flex-col justify-end p-20 w-full text-white">
@@ -121,8 +130,7 @@ setTimeout(() => navigate('/dashboard'), 2500);
           </motion.div>
         </div>
       </div>
-
-      {/* --- RIGHT SIDE: THE SIGN-IN FORM --- */}
+ 
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 lg:p-24 bg-white">
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
