@@ -12,6 +12,7 @@ import Notice from './Component/CourseManagement/NoticeManagement/NoticePage'
 import NoticeDetails from './Component/CourseManagement/NoticeManagement/Notice'
 import AdminDashboard from './Component/CourseManagement/AdminDashboard'
 import Home from './Pages/Home'
+import CourseFetch from "./Component/CourseManagement/FrontPages/LandingSection/CourseFetch";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
        <Route path="/course/:id" element={<CourseEdit />} />
        <Route path="/instructors/:id" element={<CourseLeader />} />
        <Route path="/notices/:id" element={<NoticeDetails />} />
+       <Route path="/courseFetch" element={<CourseFetch />} />
     </Routes>
   );
 }
