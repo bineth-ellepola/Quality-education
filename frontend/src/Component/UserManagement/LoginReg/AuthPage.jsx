@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import "./AuthPage.css";
 import { useNavigate } from "react-router-dom";
+import ImageSlider from "./ImageSlider";
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -146,6 +147,8 @@ const AuthPage = () => {
           <p className="description">
             Manage your learning experience effortlessly — whether you're a student, instructor, or admin.
           </p>
+
+          <ImageSlider />
 
           <div className="stats-container">
             <div className="stat-item">
