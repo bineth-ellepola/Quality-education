@@ -13,7 +13,13 @@ import NoticeDetails from './Component/CourseManagement/NoticeManagement/Notice'
 import AdminDashboard from './Component/CourseManagement/AdminDashboard'
 import Home from './Pages/Home'
 import CourseFetch from "./Component/CourseManagement/FrontPages/LandingSection/CourseFetch";
-
+import AllCourses from "./Component/CourseManagement/FrontPages/LandingSection/AllCourses";
+ import CourseDetailss from './Pages/CourseDe'
+ import Help from "./Component/CourseManagement/FrontPages/Help";
+ import University from "./Component/CourseManagement/FrontPages/LandingSection/University";
+ import Business from "./Pages/Business";
+ import DataScience from "./Pages/DataScience";
+import BusinessPage from "./Pages/BusinessPage";
 function App() {
   return (
     <Routes>
@@ -31,6 +37,13 @@ function App() {
        <Route path="/instructors/:id" element={<CourseLeader />} />
        <Route path="/notices/:id" element={<NoticeDetails />} />
        <Route path="/courseFetch" element={<CourseFetch />} />
+       <Route path="/allCourses" element={<AllCourses />} />
+       <Route path="/courses/:id" element={<CourseDetailss />} />
+       <Route path="/help" element={<Help />} />
+       <Route path="/campus" element={<University />} />
+       <Route path="/business" element={<Business />} />
+       <Route path="/datScience" element={<DataScience />} />
+       <Route path="/businessSection" element={<BusinessPage />} />
     </Routes>
   );
 }

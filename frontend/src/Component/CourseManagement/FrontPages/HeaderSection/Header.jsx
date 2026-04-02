@@ -27,7 +27,7 @@ function Header() {
           </Link>
           
           <div className="hidden items-center gap-6 md:flex">
-            <Link to="/courses" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
+            <Link to="/allCourses" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
               Courses
             </Link>
 
@@ -53,8 +53,8 @@ function Header() {
 
         <div className="space-y-2">
           {[
-            { name: 'Data Science', icon: <BarChart size={16} />, path: '/category/data-science' },
-            { name: 'Business', icon: <BookOpen size={16} />, path: '/category/business' },
+            { name: 'Data Science', icon: <BarChart size={16} />, path: '/datScience' },
+            { name: 'Business', icon: <BookOpen size={16} />, path: '/businessSection' },
             { name: 'Computer Science', icon: <Code size={16} />, path: '/category/cs' }
           ].map((item, idx) => (
             <Link

@@ -2,25 +2,23 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Loader2, CheckCircle2, AlertCircle, X, ChevronRight } from 'lucide-react';
-import s3 from '../../../assets/s3.jpg'
+import { Mail, Lock, Loader2, CheckCircle2, AlertCircle, X, ArrowRight, Eye, EyeOff, Github } from 'lucide-react';
 import { useAppContext } from '../AppProvider';
 
 const Signin = () => {
-  const {setUser} = useAppContext()
+  const { setUser } = useAppContext();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [toasts, setToasts] = useState([]); 
+  const [showPassword, setShowPassword] = useState(false);
+  const [toasts, setToasts] = useState([]);
   const [form, setForm] = useState({ email: "", password: "" });
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const addToast = (type, message) => {
-    const id = Date.now();
+    const id = Math.random().toString(36).substr(2, 9);
     setToasts((prev) => [...prev, { id, type, message }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 5000);
+    setTimeout(() => removeToast(id), 5000);
   };
 
   const removeToast = (id) => {
@@ -28,185 +26,183 @@ const Signin = () => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  try {
-    const response = await axios.post("http://localhost:5001/api/users/signin", form);
-    const { token, user } = response.data;
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await axios.post("http://localhost:5001/api/users/signin", form);
+      const { token, user } = response.data;
 
-    addToast('success', 'Authentication successful. Welcome back!');
-    setUser(user);
+      addToast('success', 'Welcome to Studly. Redirecting...');
+      setUser(user);
 
-    // Store token and user in localStorage
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
-    // Redirect based on role
-    setTimeout(() => {
-      if (user.role === "admin") {
-        navigate("/admin");
-      } else if (user.role === "instructor") {
-        navigate("/instructor");
-      } else {
-        navigate("/"); // fallback
-      }
-    }, 2500);
+      setTimeout(() => {
+        const routes = { admin: "/admin", instructor: "/instructor" };
+        navigate(routes[user.role] || "/");
+      }, 1500);
 
-  } catch (error) {
-    addToast('error', error.response?.data?.message || 'Unauthorized. Please check your credentials.');
-  } finally {
-    setLoading(false);
-  }
-};
+    } catch (error) {
+      addToast('error', error.response?.data?.message || 'Invalid credentials provided.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="flex min-h-screen bg-white font-sans selection:bg-indigo-100">
+    <div className="flex min-h-screen bg-white font-sans selection:bg-orange-100 text-black">
       
-       
+      {/* --- Notification Hub --- */}
       <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-3 w-full max-w-sm">
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout">
           {toasts.map((toast) => (
             <motion.div
               key={toast.id}
               layout
               initial={{ opacity: 0, x: 50, scale: 0.9 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
-              className={`flex items-start gap-3 p-4 rounded-xl shadow-2xl border backdrop-blur-md ${
+              exit={{ opacity: 0, x: 20, scale: 0.95 }}
+              className={`p-4 rounded-xl shadow-xl border flex items-center gap-3 backdrop-blur-md ${
                 toast.type === 'success' 
-                  ? 'bg-white/95 border-emerald-100 shadow-emerald-500/10' 
-                  : 'bg-white/95 border-rose-100 shadow-rose-500/10'
+                  ? 'bg-black text-white border-zinc-800' 
+                  : 'bg-white border-orange-200 text-black'
               }`}
             >
-              <div className="mt-0.5">
-                {toast.type === 'success' ? (
-                  <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                ) : (
-                  <AlertCircle className="w-5 h-5 text-rose-500" />
-                )}
-              </div>
-              <div className="flex-1">
-                <p className={`text-xs font-black uppercase tracking-widest ${toast.type === 'success' ? 'text-emerald-600' : 'text-rose-600'}`}>
-                  {toast.type === 'success' ? 'Success' : 'System Error'}
-                </p>
-                <p className="text-sm text-slate-700 font-medium leading-tight mt-1">{toast.message}</p>
-              </div>
-              <button onClick={() => removeToast(toast.id)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                <X className="w-4 h-4" />
+              {toast.type === 'success' ? <CheckCircle2 className="w-5 h-5 text-orange-500" /> : <AlertCircle className="w-5 h-5 text-orange-600" />}
+              <p className="text-sm font-semibold flex-1">{toast.message}</p>
+              <button onClick={() => removeToast(toast.id)} className="hover:bg-zinc-800 p-1 rounded-full transition-colors">
+                <X className={`w-4 h-4 ${toast.type === 'success' ? 'text-zinc-400' : 'text-zinc-500'}`} />
               </button>
             </motion.div>
           ))}
         </AnimatePresence>
       </div>
 
-    
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-900">
-        <img 
-          src={s3}
-          alt="Professional Background"
-          className="absolute inset-0 w-full h-full object-cover opacity-90"
-        />
-         
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        
-        <div className="relative z-10 flex flex-col justify-end p-20 w-full text-white">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
+      {/* --- Visual Branding Panel (Black & Orange) --- */}
+      <div className="hidden lg:flex lg:w-1/2 relative bg-black p-12 flex-col justify-between overflow-hidden">
+      
+
+        <div className="relative z-10">
+          <div className="flex items-center gap-3">
+              
+             <span className="text-white font-bold tracking-tight text-xl">Studly Corparation</span>
+          </div>
+        </div>
+
+        <div className="relative z-10">
+          <motion.h1 
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            className="text-5xl font-bold text-white leading-tight mb-6"
           >
-            <div className="mb-6 flex items-center gap-3">
-              <div className="h-1 w-12 bg-white rounded-full" />
-              <span className="text-sm font-bold uppercase tracking-[0.3em] text-white">Enterprise Edition</span>
-            </div>
-            <h1 className="text-6xl font-extrabold leading-[1.1] tracking-tight">
-              Manage your <br />
-              <span className="text-[#3f7d20]">Teaching ability</span> <br />
-              like a pro.
-            </h1>
-            <p className="mt-8 text-xl text-slate-300 max-w-md font-medium leading-relaxed">
-              Experience the next generation of cloud management with our unified AI-driven dashboard.
-            </p>
-          </motion.div>
+            Empowering the next <br /> generation of <span className="text-orange-500 underline decoration-orange-500/30 underline-offset-8">leaders.</span>
+          </motion.h1>
+          <p className="text-zinc-400 text-lg max-w-md leading-relaxed">
+            Join 10,000+ educators worldwide in a workspace designed for clarity and speed.
+          </p>
+        </div>
+
+        <div className="relative z-10 flex gap-8">
+           <div>
+             <p className="text-white font-bold text-2xl">99.9%</p>
+             <p className="text-orange-500 text-xs uppercase tracking-widest font-semibold">Uptime</p>
+           </div>
+           <div>
+             <p className="text-white font-bold text-2xl">24/7</p>
+             <p className="text-orange-500 text-xs uppercase tracking-widest font-semibold">Support</p>
+           </div>
         </div>
       </div>
- 
-      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 lg:p-24 bg-white">
+
+      {/* --- Authentic Form Panel (White & Black) --- */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 bg-white">
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-sm"
+          className="w-full max-w-md"
         >
-          <div className="mb-12">
-            <h2 className="text-4xl font-black text-[#3f7d20] tracking-tighter">Sign In</h2>
-            <p className="text-slate-500 mt-3 font-medium">Please enter your credentials to continue.</p>
+          <div className="mb-10">
+            <h2 className="text-4xl font-extrabold text-black tracking-tight">Welcome Back</h2>
+            <p className="text-zinc-500 mt-3 font-medium">Please enter your details to sign in.</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label className="text-[13px] font-bold text-slate-500 uppercase tracking-wider ml-1">Email Address</label>
+              <label className="text-sm font-semibold text-black">Email Address</label>
               <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
                 <input 
                   type="email" 
                   name="email"
                   required
-                  placeholder="name@company.com"
+                  placeholder="youremail.com"
                   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-0 focus:border-indigo-600 outline-none transition-all placeholder:text-slate-400 font-medium"
+                  className="w-full pl-12 pr-4 py-3.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-4 focus:ring-orange-50 focus:border-orange-500 outline-none transition-all text-black"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <div className="flex justify-between items-center ml-1">
-                <label className="text-[13px] font-bold text-slate-500 uppercase tracking-wider">Password</label>
-                <button type="button" className="text-xs font-bold text-[#03045e] hover:text-indigo-800 transition-colors">Forgot?</button>
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-semibold text-black">Password</label>
+                <button type="button" className="text-xs font-bold text-orange-600 hover:text-orange-700">Forgot password?</button>
               </div>
               <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-orange-500 transition-colors" />
                 <input 
-                  type="password" 
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   required
                   placeholder="••••••••"
                   onChange={handleChange}
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl focus:ring-0 focus:border-[#03045e] outline-none transition-all placeholder:text-slate-400 font-medium"
+                  className="w-full pl-12 pr-12 py-3.5 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-4 focus:ring-orange-50 focus:border-orange-500 outline-none transition-all text-black"
                 />
+                <button 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-black transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
             </div>
 
             <button 
               type="submit" 
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-[#000000] text-white font-bold py-4 rounded-2xl shadow-xl shadow-slate-200 transition-all flex items-center justify-center gap-2 active:scale-[0.97] disabled:opacity-70 disabled:active:scale-100"
+              className="w-full bg-black hover:bg-zinc-900 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-70"
             >
               {loading ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  <span className="tracking-tight">Authorize Access</span>
-                  <ChevronRight className="w-5 h-5" />
+                  <span className="text-white-500">Sign In</span>
+                   
+                  <ArrowRight className="w-5 h-5 text-orange-500" />
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-10 flex items-center gap-4">
-            <div className="h-[1px] bg-slate-100 flex-1"></div>
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Social Login</span>
-            <div className="h-[1px] bg-slate-100 flex-1"></div>
+          <div className="mt-8 relative">
+            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-zinc-200"></span></div>
+            <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-4 text-zinc-400 font-semibold tracking-widest">Or continue with</span></div>
           </div>
 
-          <button className="w-full mt-8 flex items-center justify-center gap-3 py-4 border-2 border-slate-100 rounded-2xl font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-200 transition-all active:scale-[0.97]">
-            <img src="https://www.svgrepo.com/show/355037/google.svg" className="w-5 h-5" alt="Google" />
-            Continue with Google
-          </button>
+          <div className="mt-8 grid grid-cols-2 gap-4">
+            <button className="flex items-center justify-center gap-3 py-3 px-4 border border-zinc-200 rounded-xl font-semibold text-black hover:bg-zinc-50 transition-all active:scale-95">
+              <img src="https://www.svgrepo.com/show/355037/google.svg" className="w-5 h-5" alt="Google" />
+              <span className="text-sm">Google</span>
+            </button>
+            <button className="flex items-center justify-center gap-3 py-3 px-4 border border-zinc-200 rounded-xl font-semibold text-black hover:bg-zinc-50 transition-all active:scale-95">
+              <Github className="w-5 h-5" />
+              <span className="text-sm">GitHub</span>
+            </button>
+          </div>
 
-          <p className="text-center mt-12 text-sm text-slate-500 font-medium">
-            Not registered yet? 
-            <button className="ml-2 font-bold text-blue-600 hover:text-indigo-700 underline underline-offset-4">Create Account</button>
+          <p className="mt-10 text-center text-zinc-500 text-sm">
+            Don't have an account? 
+            <button className="ml-1 font-bold text-orange-600 hover:text-orange-700 hover:underline transition-colors">Create an account</button>
           </p>
         </motion.div>
       </div>
