@@ -20,11 +20,15 @@ import AllCourses from "./Component/CourseManagement/FrontPages/LandingSection/A
  import Business from "./Pages/Business";
  import DataScience from "./Pages/DataScience";
 import BusinessPage from "./Pages/BusinessPage";
+import SignUp from "./Component/CourseManagement/LoginComponent/SignUp";
+import OTPVerification from "./Component/CourseManagement/LoginComponent/Otp";
+import UserProfile from "./Component/CourseManagement/LoginComponent/UserProfile";
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+       <Route path="/userprofile/:id" element={<UserProfile />} />
       
        <Route path="/subject" element={<SubjectCreation />} />
         <Route path="/admin" element={<AdminDashboard />} />
@@ -44,6 +48,8 @@ function App() {
        <Route path="/business" element={<Business />} />
        <Route path="/datScience" element={<DataScience />} />
        <Route path="/businessSection" element={<BusinessPage />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/verify-otp" element={<OTPVerification />} />
     </Routes>
   );
 }

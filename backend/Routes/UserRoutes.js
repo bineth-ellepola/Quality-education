@@ -1,13 +1,27 @@
+// Route/UserRoute.js
+
 import express from "express";
-import * as UserController from "../Controllers/UserController.js";
+import {
+  registerUser,
+  verifyEmail,
+  loginUser,
+  resendOTP,
+  getUserById
+} from "../Controllers/UserController.js";
 
 const router = express.Router();
 
-// Create user
-router.post("/", UserController.createUser);
+// 🟢 Register
+router.post("/register", registerUser);
+router.get("/:id", getUserById);
 
- 
-router.get("/:id", UserController.getUserById); 
-router.post("/signin", UserController.signInUser);
+// 🔵 Verify OTP
+router.post("/verify-email", verifyEmail);
+
+// 🟡 Login
+router.post("/login", loginUser);
+
+// 🔄 Resend OTP
+router.post("/resend-otp", resendOTP);
 
 export default router;

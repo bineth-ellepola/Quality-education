@@ -29,7 +29,7 @@ const Signin = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:5001/api/users/signin", form);
+      const response = await axios.post("http://localhost:5001/api/users/login", form);
       const { token, user } = response.data;
 
       addToast('success', 'Welcome to Studly. Redirecting...');
