@@ -2,13 +2,13 @@
 
 A comprehensive web application designed to support adult learners in completing secondary education online. The platform connects educators, administrators, and students through an intuitive and modern Learning Management System (LMS).
 
-## 🚀 Project Overview
+##  Project Overview
 
 **Quality-education** is built using the MERN stack (MongoDB, Express.js, React, Node.js). It features a robust backend API for managing courses, users, enrollments, and assessments, paired with a dynamic, responsive frontend built with React and Tailwind CSS. 
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 The application is structured into two main parts:
 1. **Frontend (Client)**: A Single Page Application (SPA) built with React and Vite. It handles the user interface, routing, and interacts with the backend APIs via Axios.
@@ -16,7 +16,7 @@ The application is structured into two main parts:
 
 ---
 
-## 💻 Technologies Used
+##  Technologies Used
 
 ### Frontend
 - **Framework**: React 19, Vite
@@ -38,7 +38,7 @@ The application is structured into two main parts:
 
 ---
 
-## 🛠️ Setup Instructions
+##  Setup Instructions
 
 ### Prerequisites
 - Node.js (v18+ recommended)
@@ -88,7 +88,7 @@ The frontend application will typically be accessible at `http://localhost:5173`
 
 ---
 
-🔌 API Endpoints
+ API Endpoints
 
 The backend exposes several RESTful endpoints to manage the application entities.
 Base URL: http://localhost:5001
@@ -96,7 +96,7 @@ Base URL: http://localhost:5001
 🩺 Health Check
 GET / → Check if API is running
 
-📚 Courses (/api)
+ Courses (/api)
 
 Create
 POST /api/courses → Create a new course (with cover image upload)
@@ -114,7 +114,7 @@ GET /api/admin/deleted-courses → Get all deleted courses
 DELETE /api/admin/courses/:id/permanent → Permanently delete course
 
 
-🧠 Subjects (/api/subjects)
+ Subjects (/api/subjects)
 
 Read
 GET /api/subjects → Get all subjects
@@ -127,7 +127,7 @@ Delete
 DELETE /api/subjects/:id → Delete subject (Protected)
 
 
-👤 Users (/api/users)
+ Users (/api/users)
 
 Auth
 POST /api/users/register → Register user (with profile picture)
@@ -152,7 +152,7 @@ PUT /api/users/:id/review → Mark submission under review
 PUT /api/users/:id/grade → Grade submission
 
 
-📢 Notices (/api/notice)
+ Notices (/api/notice)
 Create
 POST /api/notice → Create notice (Protected, multiple attachments)
 Read
@@ -161,13 +161,13 @@ GET /api/notice/course/:courseId → Get notices by course
 GET /api/notice/:id → Get single notice
 
 
-🛑 Admin Notices (/api/admin/notice)
+ Admin Notices (/api/admin/notice)
 POST /api/admin/notice → Create admin notice
 GET /api/admin/notice/all → Get all admin notices
 DELETE /api/admin/notice/:id → Delete admin notice
 
 
-📝 Assessments (/api/assestment)
+ Assessments (/api/assestment)
 Create
 POST /api/assestment/courses/:courseId/assessments → Add assessment (file upload)
 Read
@@ -179,7 +179,7 @@ Delete
 DELETE /api/assestment/assessments/:id → Delete assessment
 
 
-📂 Content (/api/content)
+ Content (/api/content)
 
 Create
 POST /api/content/courses/:courseId/contents → Add content (file upload)
@@ -192,7 +192,7 @@ Delete
 DELETE /api/content/contents/:id → Delete content
 
 
-🎟️ Support Tickets (/api/tickets)
+ Support Tickets (/api/tickets)
 Create
 POST /api/tickets → Create ticket (with attachments)
 Read
@@ -208,13 +208,13 @@ Messages
 POST /api/tickets/:id/message → Add message to ticket (with attachments)
 
 
-🎓 Enrollments (/api/enrollments)
+ Enrollments (/api/enrollments)
 POST /api/enrollments/enroll → Enroll in a course
 GET /api/enrollments/my-courses/:userId → Get user's enrolled courses
 GET /api/enrollments/course-students/:courseId → Get students in a course
 
 
-📊 Progress (/api/progress)
+ Progress (/api/progress)
 
 Student
 POST /api/progress/start → Start progress
@@ -234,7 +234,7 @@ DELETE /api/progress/:id → Delete progress
 
 ---
 
-## 🧪 Testing
+##  Testing
 
 We use comprehensive testing strategies to ensure code quality and reliability across the backend and frontend.
 
@@ -356,7 +356,7 @@ npm test -- --watch
 
 ---
 
-## 🚀 Deployment
+##  Deployment
 
 Quality-education is deployed on Vercel, utilizing serverless architecture for both frontend and backend with MongoDB Atlas for the database and ImageKit for media storage.
 
