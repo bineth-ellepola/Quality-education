@@ -1,0 +1,792 @@
+ 
+import React, { useState, useMemo, useEffect,useRef } from 'react'; 
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { Link } from "react-router-dom";
+ 
+
+
+dayjs.extend(relativeTime);
+import { useNavigate } from 'react-router-dom';
+import img1 from '../../assets/im1.jpg';
+import img2 from '../../assets/im2.jpg';
+import img3 from '../../assets/im3.jpg';
+import img4 from '../../assets/im4.jpg';
+import img5 from '../../assets/im5.jpg';
+import img6 from '../../assets/im6.jpg';
+import s1 from '../../assets/ss2.mp3'
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  LayoutGrid, BookOpen, Users, BarChart3, Plus, Search, 
+  GraduationCap, LogOut, Settings, Bell, 
+  ChevronRight, X, Layers, Monitor, Clock, Filter,Mail
+} from 'lucide-react';
+import { useAppContext } from './AppProvider';
+import axios from 'axios';
+
+const InstructorDashboard = () => {
+  const navigate = useNavigate();
+  const { user, setUser } = useAppContext();
+
+  const token = localStorage.getItem('token');
+
+
+const [notices, setNotices] = useState([]);
+const [loadingNotices, setLoadingNotices] = useState(false);
+const [isNotifOpen, setIsNotifOpen] = useState(false);
+const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+const [selectedCourseId, setSelectedCourseId] = useState(null);
+const [deleteReason, setDeleteReason] = useState("");
+
+
+  const [subjects, setSubjects] = useState([]);
+  const [subjectsWithImages, setSubjectsWithImages] = useState([]);
+  const [courses, setCourses] = useState([]); 
+  
+  const [activeTab, setActiveTab] = useState('subjects');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState('All');
+const notificationSound = useRef(null);
+  const bgImages = [img1, img2, img3, img4, img5, img6];
+
+  
+
+  
+  const fetchSubjects = async () => {
+    try {
+      const res = await axios.get('http://localhost:5001/api/subjects', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const fetchedSubjects = res.data.subjects || [];
+
+      // Assign a random image once per subject
+      const subjectsWithRandomImages = fetchedSubjects.map(sub => ({
+        ...sub,
+        randomImage: bgImages[Math.floor(Math.random() * bgImages.length)]
+      }));
+
+      setSubjects(fetchedSubjects);
+      setSubjectsWithImages(subjectsWithRandomImages);
+    } catch (err) {
+      console.error('Failed to load subjects', err);
+    }
+  };
+  
+  //course edit details
+  const handleCourseEdit = (course) => {
+  navigate(`/course/${course._id}`); // adjust if your route is different
+};
+
+// const handleCourseDelete = async (id) => {
+//   if (!window.confirm('Are you sure you want to delete this course?')) return;
+
+//   try {
+//     await axios.delete(`http://localhost:5001/api/courses/${id}`, {
+//       headers: { Authorization: `Bearer ${token}` }
+//     });
+//     fetchCourses();
+//   } catch (err) {
+//     console.error('Course delete failed', err);
+//   }
+// };
+const handleCourseDelete = (id) => {
+  setSelectedCourseId(id);
+  setDeleteModalOpen(true);
+};
+
+const confirmDeleteCourse = async () => {
+  if (!deleteReason.trim()) {
+    alert("Please provide a reason");
+    return;
+  }
+
+  try {
+    await axios.delete(
+      `http://localhost:5001/api/courses/${selectedCourseId}`,
+      {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { reason: deleteReason } // 🔥 IMPORTANT
+      }
+    );
+
+    setDeleteModalOpen(false);
+    setDeleteReason("");
+    setSelectedCourseId(null);
+
+    fetchCourses();
+
+  } catch (err) {
+    console.error("Course delete failed", err);
+  }
+};
+
+ 
+
+ 
+const fetchNotices = async () => {
+  setLoadingNotices(true);
+  try {
+    const res = await axios.get('http://localhost:5001/api/notice/all', {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setNotices(res.data.data || []);
+  } catch (err) {
+    console.error('Failed to load notices', err);
+  } finally {
+    setLoadingNotices(false);
+  }
+};
+
+// Fetch notices on mount
+useEffect(() => {
+  fetchNotices();
+}, []);
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+  const fetchCourses = async () => {
+    try {
+      const res = await axios.get('http://localhost:5001/api/courses?limit=1000', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCourses(res.data.data || []);
+    } catch (err) {
+      console.error('Failed to load courses', err);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchSubjects();
+    fetchCourses();
+  }, []);
+
+  const handleNoticeClick = (noticeId) => {
+  setIsNotifOpen(false); // close dropdown
+  navigate(`/notices/${noticeId}`); // go to notice details page
+};
+
+  // --- FILTER LOGIC ---
+   // ---------------- FILTERS ----------------
+   const filteredSubjectsWithImages = useMemo(() => {
+     return subjectsWithImages.filter(sub => {
+       const matchesSearch = sub.name.toLowerCase().includes(searchQuery.toLowerCase());
+       const matchesFilter = filterCategory === 'All' || sub.category === filterCategory;
+       return matchesSearch && matchesFilter;
+     });
+   }, [subjectsWithImages, searchQuery, filterCategory]);
+
+     const filteredCourses = useMemo(() => {
+       return courses.filter(course =>
+         course.title?.toLowerCase().includes(searchQuery.toLowerCase())
+       );
+     }, [courses, searchQuery]);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    if (setUser) setUser(null);
+    navigate('/');
+  };
+
+  const handleCreateSubject = () => navigate('/subject');
+  const handleCourses = ()=> navigate('/course');
+
+  const handleEdit = (sub) => navigate(`/subject/${sub._id}`);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to archive this subject?')) return;
+    try {
+      await axios.delete(`http://localhost:5001/api/subjects/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchSubjects();
+    } catch (err) {
+      console.error('Delete failed', err);
+    }
+  };
+
+  return (
+    <div className="flex min-h-screen bg-[#FBFBFB] text-[#1A1A1A] font-sans selection:bg-green-600 selection:text-white overflow-hidden">
+  
+ 
+  <aside className="w-64 bg-white border-r border-gray-100 hidden lg:flex flex-col sticky top-0 h-screen">
+    
+    <div className="p-6 flex items-center gap-3">
+      <span className="font-semibold tracking-tight text-gray-900">
+        Studly CMS
+      </span>
+    </div>
+
+    <nav className="flex-1 px-3 space-y-0.5">
+      <NavItem icon={<LayoutGrid size={18} />} label="Dashboard" active />
+      <Link
+  to="/instructorProfile"
+  style={{
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    textDecoration: "none",
+    color: "#333",
+    padding: "8px 12px",
+    borderRadius: "6px",
+  }}
+>
+  <Layers size={18} />
+  <span>Your Portal</span>
+</Link>
+     <Link to="/contentManage">  <NavItem icon={<BookOpen size={18} />} label="Curriculum" /></Link>
+      <NavItem icon={<Users size={18} />} label="Students" />
+     <Link to="/review"> <NavItem icon={<BookOpen size={18} />} label="Submissions" /></Link> 
+      <div className="my-4 border-t border-gray-50 mx-3" />
+      <NavItem icon={<BarChart3 size={18} />} label="Reports" />
+       <Link to="/complain"><NavItem icon={<BarChart3 size={18} />} label="Complains" /></Link>  
+      <NavItem icon={<Settings size={18} />} label="Settings" />
+    </nav>
+
+    <div className="p-4 border-t border-gray-50">
+      <button
+        onClick={handleLogout}
+        className="flex items-center gap-3 w-full p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all text-sm font-medium"
+      >
+        <LogOut size={16} /> Sign out
+      </button>
+    </div>
+  </aside>
+ 
+      {/* --- CONTENT AREA --- */}
+      <main className="flex-1 h-screen overflow-y-auto">
+        <header className="h-16 bg-white/60 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-30 px-8 flex items-center justify-between">
+  {/* LEFT: Breadcrumbs + Quick Search */}
+  <div className="flex items-center gap-6">
+    <div className="flex items-center gap-3 text-sm text-gray-400">
+      <span className="hover:text-gray-600 cursor-pointer transition-colors">Workspace</span>
+      <ChevronRight size={14} className="opacity-50" />
+      <span className="text-gray-900 font-semibold capitalize tracking-tight">{activeTab}</span>
+    </div>
+
+    {/* NEW: Global Command Search (Real-world SaaS staple) */}
+   <div className="relative flex items-center group">
+  <div className="absolute left-3 transition-colors duration-200">
+    <Search 
+      size={16} 
+      className="text-gray-400 group-focus-within:text-blue-500 group-hover:text-gray-600" 
+    />
+  </div>
+  <input 
+    type="text"
+    placeholder="Search commands..."
+    className="w-10 group-hover:w-64 focus:w-64 h-9 pl-10 pr-12 bg-transparent hover:bg-gray-100/80 focus:bg-white border border-transparent focus:border-gray-200 focus:ring-4 focus:ring-blue-50/50 rounded-xl transition-all duration-300 ease-in-out outline-none text-sm placeholder:opacity-0 focus:placeholder:opacity-100"
+  />
+  <div className="absolute right-3 opacity-0 group-focus-within:opacity-100 transition-opacity pointer-events-none">
+    <kbd className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-gray-50 text-[10px] font-medium text-gray-400 border border-gray-200">
+      ESC
+    </kbd>
+  </div>
+</div>
+  </div>
+
+  <div className="flex items-center gap-3">
+    {/* NOTIFICATIONS */}
+    <div className="relative">
+      <button
+        onClick={() => {
+          setIsNotifOpen((prev) => {
+            const willOpen = !prev;
+            if (willOpen && notificationSound.current) {
+              notificationSound.current.play().catch((err) => console.log(err));
+            }
+            return willOpen;
+          });
+        }}
+        className={`relative p-2 rounded-full transition-all ${
+          isNotifOpen ? "bg-gray-100 text-gray-900" : "text-gray-400 hover:text-gray-900 hover:bg-gray-50"
+        }`}
+      >
+        <Bell size={20} strokeWidth={1.5} />
+        {notices.length > 0 && (
+          <span className="absolute top-2 right-2.5 w-2 h-2 bg-blue-500 rounded-full border-2 border-white animate-pulse" />
+        )}
+      </button>
+
+      <audio ref={notificationSound} src={s1} preload="auto" />
+
+      <AnimatePresence>
+        {isNotifOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="absolute right-0 mt-3 w-80 bg-white border border-gray-200 rounded-xl shadow-xl z-50 overflow-hidden"
+          >
+            {/* Real-world touch: A header for the dropdown */}
+            <div className="px-4 py-3 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Notifications</span>
+              {notices.length > 0 && <span className="text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-bold">New</span>}
+            </div>
+
+            <div className="max-h-96 overflow-y-auto">
+              {loadingNotices ? (
+                <div className="p-8 text-center text-gray-400 text-sm italic">Loading updates...</div>
+              ) : notices.length === 0 ? (
+                <div className="p-8 text-center text-gray-400 text-sm">No new notices.</div>
+              ) : (
+                notices.map((notice) => (
+                  <div
+                    key={notice._id}
+                    onClick={() => handleNoticeClick(notice._id)}
+                    className="p-4 border-b border-gray-50 hover:bg-blue-50/30 cursor-pointer transition-colors group"
+                  >
+                    <p className="text-sm font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+                      {notice.title}
+                    </p>
+                    <p className="text-xs text-gray-500 line-clamp-2 mt-0.5 leading-relaxed">
+                      {notice.description}
+                    </p>
+                    <p className="text-[10px] text-gray-400 mt-2 flex items-center gap-1">
+                      <Clock size={10} /> {dayjs(notice.createdAt).fromNow()}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+    {/* EMAIL SUPPORT */}
+<div className="relative group">
+  <a
+    href="mailto:adminstudly@gmail.com"
+    className="flex p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200"
+    title="Contact Support"
+  >
+    <Mail size={20} strokeWidth={1.5} />
+    <span className="absolute -top-1 -right-1 w-2 h-2 bg-gray-300 rounded-full border-2 border-white group-hover:bg-blue-400 transition-colors" />
+  </a>
+
+  {/* Real-world Hover Tooltip */}
+  <div className="absolute top-full right-0 mt-3 hidden group-hover:block z-50">
+    <motion.div
+      initial={{ opacity: 0, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-gray-900 text-white text-[11px] py-1.5 px-3 rounded-lg shadow-xl whitespace-nowrap flex items-center gap-2"
+    >
+      <span className="opacity-70 font-medium">Support:</span>
+      <span className="font-bold">adminstudly@gmail.com</span>
+      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+    </motion.div>
+    {/* Tooltip Arrow */}
+    <div className="absolute -top-1 right-3 w-2 h-2 bg-gray-900 rotate-45" />
+  </div>
+</div>
+
+    {/* Divider */}
+    <div className="h-6 w-[1px] bg-gray-200 mx-1" />
+
+    {/* USER PROFILE */}
+    <Link
+      to="/instructorProfile"
+      className="flex items-center gap-3 pl-2 pr-1 py-1 rounded-full hover:bg-gray-50 transition-all group"
+    >
+      <div className="flex flex-col items-end hidden sm:flex">
+        <span className="text-sm font-bold text-black-500 leading-none">
+          {user?.name || 'Instructor'}
+        </span>
+        <span className="text-[10px] text-blue-600 font-medium mt-1 flex items-center gap-1">
+          <span className="w-1.5 h-1.5 bg-red-500 rounded-full" /> Online
+        </span>
+      </div>
+      
+      <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-black to-black border-2   flex items-center justify-center text-white font-bold ring-1 ring-gray-100">
+        <span>{user?.name?.charAt(0) || 'I'}</span>
+      </div>
+    </Link>
+  </div>
+</header>
+
+        <div className="p-8 max-w-6xl mx-auto">
+          {/* WELCOME SECTION */}
+          <div className="flex justify-between items-start mb-10">
+            <div>
+              <h1 className="text-2xl font-semibold text-[#3f7d20] tracking-tight">
+                Welcome back, <span className='text-black '>{user?.name || 'Instructor'} </span>
+              </h1>
+              <p className="text-gray-500 text-sm mt-1 font-normal">
+                Everything looks good. You have <span className="text-blue-600 font-medium">{subjects.length} active subjects</span>.
+              </p>
+            </div>
+            <button 
+              onClick={ handleCreateSubject }
+              className="px-4 py-2 bg-gray-900 hover:bg-black text-white rounded-lg text-sm font-medium transition-all shadow-sm flex items-center gap-2"
+            >
+              <Plus size={16} /> Create Subject
+            </button>
+             <button 
+              onClick={ handleCourses }
+              className="px-4 py-2 bg-[#3f7d20] hover:bg-black text-white rounded-lg text-sm font-medium transition-all shadow-sm flex items-center gap-2"
+            >
+              <Plus size={16} /> Create Course
+            </button>
+          </div>
+
+          {/* ADVANCED FILTER BAR */}
+          <div className="flex flex-wrap items-center justify-between gap-4 mb-8 bg-white p-3 border border-gray-100 rounded-xl shadow-sm">
+            <div className="flex items-center gap-3 flex-1 min-w-[240px]">
+              <div className="relative w-full max-w-sm">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+                <input 
+                  type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search subjects..." 
+                  className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-lg text-sm focus:ring-1 focus:ring-gray-200 outline-none transition-all"
+                />
+              </div>
+              <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg text-xs font-medium text-gray-500 border border-transparent">
+                <Filter size={14} />
+                <select 
+                  className="bg-transparent outline-none cursor-pointer"
+                  value={filterCategory}
+                  onChange={(e) => setFilterCategory(e.target.value)}
+                >
+                  <option value="All">All Categories</option>
+                  <option value="Engineering">Engineering</option>
+                  <option value="Design">Design</option>
+                  <option value="Mathematics">Mathematics</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* TAB SYSTEM */}
+          <div className="flex gap-8 border-b border-gray-100 mb-8">
+            <TabButton label="Active Subjects" active={activeTab === 'subjects'} onClick={() => setActiveTab('subjects')} count={filteredSubjectsWithImages.length} />
+            <TabButton label="Courses" active={activeTab === 'courses'} onClick={() => setActiveTab('courses')} count={filteredCourses.length} />
+            <TabButton label="Analytics" active={activeTab === 'analytics'} onClick={() => setActiveTab('analytics')} />
+          </div>
+          
+
+          {/* DYNAMIC CONTENT */}
+         {/* DYNAMIC CONTENT */}
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  
+  {/* 1. SUBJECTS TAB - Only show if activeTab is 'subjects' */}
+  {activeTab === 'subjects' && (
+    <>
+      {filteredSubjectsWithImages.map(sub => {
+        const isOwner = sub.createdBy?._id === user._id;
+        return (
+          <div
+            key={sub._id}
+            className="relative bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-all group overflow-hidden"
+          >
+            {/* Top Image Banner */}
+            <div
+              className="h-40 w-full object-cover"
+              style={{
+                backgroundImage: `url(${sub.randomImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+            />
+
+            {/* Content */}
+            <div className="p-6">
+              {/* 3-Dots Menu */}
+              {isOwner && (
+                <div className="absolute top-4 right-4">
+                  <div className="relative">
+                    <button
+                      className="p-1 rounded-full hover:bg-gray-100 transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSubjectsWithImages(prev =>
+                          prev.map(s =>
+                            s._id === sub._id
+                              ? { ...s, showMenu: !s.showMenu }
+                              : { ...s, showMenu: false }
+                          )
+                        );
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </button>
+
+                    {sub.showMenu && (
+                      <div className="absolute right-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                        <button onClick={() => handleEdit(sub)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Update</button>
+                        <button onClick={() => handleDelete(sub._id)} className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Delete</button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <h3 className="font-semibold text-gray-900 text-lg mb-1">{sub.name}</h3>
+              <p className="text-xs text-gray-400 mb-2">Created by: {sub.createdBy?.name || 'Unknown'}</p>
+              
+              <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+                <span>{sub.category || sub.categoryType}</span>
+                <span className="w-1 h-1 bg-gray-200 rounded-full" />
+                <span>{sub.students || 0} Students</span>
+              </div>
+
+              <div className="text-xs text-gray-400 font-medium flex items-center gap-1">
+                <Clock size={12} /> {sub.updatedAt ? dayjs(sub.updatedAt).fromNow() : 'Just now'}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      
+      {filteredSubjectsWithImages.length === 0 && (
+        <div className="col-span-full py-20 text-center">
+          <p className="text-gray-400 text-sm">No subjects found matching your criteria.</p>
+        </div>
+      )}
+    </>
+  )}
+
+{/*  Course Area */}
+ {activeTab === 'courses' && filteredCourses.map((course) => {
+  const isOwner = course.instructor?._id === user._id;
+
+  return (
+  <div 
+    key={course._id} 
+    className="group bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden"
+  >
+     
+    <div className="relative aspect-video overflow-hidden">
+      {isOwner && (
+  <div className="absolute top-4 left-4 z-50">
+    <div className="relative">
+      <button
+        className="p-1 rounded-full bg-white/80 hover:bg-gray-100 transition-colors"
+        onClick={(e) => {
+          e.stopPropagation();
+          setCourses(prev =>
+            prev.map(c =>
+              c._id === course._id
+                ? { ...c, showMenu: !c.showMenu }
+                : { ...c, showMenu: false }
+            )
+          );
+        }}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zm6 0a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+      </button>
+
+      {course.showMenu && (
+        <div className="absolute left-0 mt-2 w-32 bg-white border border-gray-200 rounded-lg shadow-lg">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCourseEdit(course);
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            Update
+          </button>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCourseDelete(course._id);
+            }}
+            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+          >
+            Delete
+          </button>
+        </div>
+      )}
+    </div>
+  </div>
+)}
+      
+      <img 
+        src={course.coverImage} 
+        alt={course.title} 
+        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+      />
+
+      
+      
+      <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full shadow-sm">
+        <span className="text-sm font-bold text-gray-900">
+          {course.price} {course.currency}
+        </span>
+      </div>
+      
+      <div className="absolute bottom-4 left-4">
+        <span
+  className={`px-2 py-1 text-xs rounded-full font-medium ${
+    course.status === "published"
+      ? "bg-green-100 text-green-700"
+      : course.status === "draft"
+      ? "bg-yellow-100 text-yellow-700"
+      : "bg-gray-200 text-gray-600"
+  }`}
+>
+  {course.status === "published"
+    ? "Live"
+    : course.status === "draft"
+    ? "Draft"
+    : "Unpublished"}
+</span>
+      </div>
+    </div>
+ 
+    <div className="p-5 flex flex-col flex-grow" onClick={()=> navigate(`/courseDetails/${course._id}`)}>
+      <div className="flex items-center gap-2 mb-2">
+        <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+          {course.subject?.name}
+        </span>
+        <span className="text-[10px] text-gray-400 font-mono">#{course.courseId}</span>
+      </div>
+
+      <h3 className="font-bold text-gray-900 text-lg line-clamp-1 mb-1 group-hover:text-blue-600 transition-colors">
+        {course.title}
+      </h3>
+      
+      <p className="text-sm text-gray-500 line-clamp-2 mb-4 leading-relaxed">
+        {course.description}
+      </p>
+
+       
+      <div className="grid grid-cols-2 gap-y-3 pt-4 border-t border-gray-50 mt-auto">
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase text-gray-400 font-semibold tracking-tight">Instructor</span>
+          <span className="text-xs font-medium text-gray-700 truncate">{course.instructor?.name}</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase text-gray-400 font-semibold tracking-tight">Level</span>
+          <span className="text-xs font-medium text-gray-700">{course.level}</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase text-gray-400 font-semibold tracking-tight">Duration</span>
+          <span className="text-xs font-medium text-gray-700">{course.duration} hrs</span>
+        </div>
+        <div className="flex flex-col">
+          <span className="text-[10px] uppercase text-gray-400 font-semibold tracking-tight">Rating</span>
+          <div className="flex items-center gap-1">
+            <span className="text-xs font-bold text-gray-800">{course.averageRating}</span>
+            <span className="text-[10px] text-gray-400 font-normal">({course.totalRatings})</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    
+    <div className="px-5 py-3 bg-gray-50 flex justify-between items-center border-t border-gray-100">
+      <div className="flex items-center gap-1.5">
+        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+        <span className="text-[11px] font-medium text-gray-600">
+          {course.enrolledStudentsCount} / {course.enrollmentLimit} Enrolled
+        </span>
+      </div>
+      <span className="text-[10px] text-gray-400">
+        {dayjs(course.createdAt).fromNow()}
+      </span>
+    </div>
+  </div>
+)})}
+
+ 
+  {activeTab === 'analytics' && (
+    <div className="col-span-full py-20 text-center">
+      <p className="text-gray-500">Analytics Dashboard Coming Soon...</p>
+    </div>
+  )}
+
+</div>
+        </div>
+        {deleteModalOpen && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+      
+      <h2 className="text-lg font-semibold mb-2 text-gray-900">
+        Delete Course
+      </h2>
+      
+      <p className="text-sm text-gray-500 mb-4">
+        Please provide a reason for deleting this course.
+      </p>
+
+      <textarea
+        value={deleteReason}
+        onChange={(e) => setDeleteReason(e.target.value)}
+        placeholder="Enter reason..."
+        className="w-full border border-gray-200 rounded-lg p-3 text-sm outline-none focus:ring-2 focus:ring-red-200"
+        rows={4}
+      />
+
+      <div className="flex justify-end gap-3 mt-5">
+        <button
+          onClick={() => {
+            setDeleteModalOpen(false);
+            setDeleteReason("");
+          }}
+          className="px-4 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={confirmDeleteCourse}
+          className="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-lg"
+        >
+          Delete
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
+      </main>
+    </div>
+  );
+};
+
+ 
+const NavItem = ({ icon, label, active = false }) => (
+  <div className={`flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all group ${
+    active ? 'bg-black-50 text-[#3f7d20] font-semibold shadow-sm shadow-blue-500/10' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+  }`}>
+    <span className={`${active ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'}`}>{icon}</span>
+    <span className="text-sm">{label}</span>
+  </div>
+);
+
+const TabButton = ({ label, active, onClick, count }) => (
+  <button onClick={onClick} className={`pb-4 text-sm font-medium transition-all relative ${active ? 'text-gray-900' : 'text-gray-400 hover:text-gray-600'}`}>
+    <div className="flex items-center gap-2">
+      {label}
+      {count !== undefined && <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${active ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-400'}`}>{count}</span>}
+    </div>
+    {active && <motion.div layoutId="tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />}
+  </button>
+);
+
+export default InstructorDashboard;

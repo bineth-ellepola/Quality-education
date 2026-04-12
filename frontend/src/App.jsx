@@ -1,26 +1,78 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-import AuthPage from "../src/Component/UserManagement/LoginReg/AuthPage";
-import StudentDashboard from "../src/Component/UserManagement/Dashborad/StudentDashboard/StudentDashboard";
-import InstructorDashboard from "../src/Component/UserManagement/Dashborad/InstructorDashboard/InstructorDashboard";
-import AdminDashboard from "../src/Component/UserManagement/Dashborad/AdminDashboard/AdminDashboard";
+ import { Routes, Route } from "react-router-dom";
+ 
+import Login from "../src/Component/CourseManagement/LoginComponent/Signin";
+import Dashboard from "../src/Component/CourseManagement/DashBoard";
+import SubjectCreation from "./Component/CourseManagement/SubjectComponent/SubjectCreation";
+import SubjectEdit from "./Component/CourseManagement/SubjectComponent/SubjectEdit";
+import Course from './Component/CourseManagement/CourseCreation/Course'
+import CourseDetails from "./Component/CourseManagement/CourseCreation/CourseDetails";
+import CourseEdit from "./Component/CourseManagement/CourseCreation/CourseEdit";
+import CourseLeader from './Component/CourseManagement/CourseCreation/CourseLeader'
+import Notice from './Component/CourseManagement/NoticeManagement/NoticePage'
+import NoticeDetails from './Component/CourseManagement/NoticeManagement/Notice'
+import AdminDashboard from './Component/CourseManagement/AdminDashboard'
+import Home from './Pages/Home'
+import CourseFetch from "./Component/CourseManagement/FrontPages/LandingSection/CourseFetch";
+import AllCourses from "./Component/CourseManagement/FrontPages/LandingSection/AllCourses";
+ import CourseDetailss from './Pages/CourseDe'
+ import Help from "./Component/CourseManagement/FrontPages/Help";
+ import University from "./Component/CourseManagement/FrontPages/LandingSection/University";
+ import Business from "./Pages/Business";
+ import DataScience from "./Pages/DataScience";
+import BusinessPage from "./Pages/BusinessPage";
+import SignUp from "./Component/CourseManagement/LoginComponent/SignUp";
+import OTPVerification from "./Component/CourseManagement/LoginComponent/Otp";
+import UserProfile from "./Component/CourseManagement/LoginComponent/UserProfile";
+import InstructorDashboard from "./Component/UserManagement/InstructorDashboard";
+import InstructManage from "./Component/UserManagement/InstructManage";
+import Complain from "./Component/CourseManagement/Complaints/Complain";
+import ComplainReply from "./Component/CourseManagement/Complaints/ComplainReply";
+import BrowseCourses from "./Component/CourseManagement/FrontPages/LandingSection/BrowseCourses";
+import LearnCourse from "./Pages/LearnCourse";
+import CompareCourses from "./Component/CourseManagement/FrontPages/LandingSection/CompareCourses";
+import Review from "./Component/CourseManagement/DashBoardComponents/Review";
+import ManageContentsAssestments from "./Component/CourseManagement/CourseManage/ManageContentsAssestments";
+import Speech from './Component/CourseManagement/SpeechSection/Speech'
 function App() {
   return (
-    <Router>
-      <Routes>
-
-        {/* Login / Register Page */}
-        <Route path="/" element={<AuthPage />} />
+    <Routes>
+      <Route path="/" element={<Home />} />
+       <Route path="/instructorProfile" element={<InstructorDashboard />} />
+       <Route path="/insManage" element={<AdminDashboard />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/contentManage" element={<ManageContentsAssestments />} />
+       <Route path="/review" element={<Review />} />
+       <Route path="/complain" element={<Complain />} />
+       <Route path="/compare" element={<CompareCourses />} />
+        <Route path="/speech" element={<Speech />} />
+        <Route path="/learn/:courseId" element={<LearnCourse />} />
+         <Route path="/browse" element={<BrowseCourses />} />
+       <Route path="/userprofile/:id" element={<UserProfile />} />
+       <Route path="/replyTicket" element={<ComplainReply />} />
 
         
-        <Route path="/student-dashboard" element={<StudentDashboard />} />
-       
-        <Route path="/instructor-dashboard" element={<InstructorDashboard />} />  
-        <Route path="/admin-dashboard" element={<AdminDashboard />} />
-
-      </Routes>
-    </Router>
+      
+       <Route path="/subject" element={<SubjectCreation />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+        <Route path="/instructor" element={<Dashboard />} />
+       <Route path="/subject/:id" element={<SubjectEdit />} />
+       <Route path="/course" element={<Course />} />
+       <Route path="/notice" element={<Notice />} />
+       <Route path="/courseDetails/:id" element={<CourseDetails />} />
+       <Route path="/course/:id" element={<CourseEdit />} />
+       <Route path="/instructors/:id" element={<CourseLeader />} />
+       <Route path="/notices/:id" element={<NoticeDetails />} />
+       <Route path="/courseFetch" element={<CourseFetch />} />
+       <Route path="/allCourses" element={<AllCourses />} />
+       <Route path="/courses/:id" element={<CourseDetailss />} />
+       <Route path="/help" element={<Help />} />
+       <Route path="/campus" element={<University />} />
+       <Route path="/business" element={<Business />} />
+       <Route path="/datScience" element={<DataScience />} />
+       <Route path="/businessSection" element={<BusinessPage />} />
+        <Route path="/signup" element={<SignUp />} />
+        <Route path="/verify-otp" element={<OTPVerification />} />
+    </Routes>
   );
 }
 
