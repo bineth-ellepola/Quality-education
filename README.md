@@ -380,7 +380,7 @@ Quality-education is deployed on Vercel, utilizing serverless architecture for b
 ### 7.3 Live Deployment URLs
 
 - **Frontend live URL**: [https://qualityfrontend.vercel.app](https://qualityfrontend.vercel.app)
-- **Backend live URL**: [https://quality-education-backend.vercel.app](https://vercel.com/bineths-projects/quality_back/6xTJoqw8nNdmxQDmJYeiMFyvekTz)
+- **Backend live URL**: [[https://quality-education-backend.vercel.app](https://vercel.com/bineths-projects/quality_back/6xTJoqw8nNdmxQDmJYeiMFyvekTz)](https://studlybackend.vercel.app)
 - **Vercel Backend Dashboard**: [https://vercel.com/bineths-projects/quality_back/6xTJoqw8nNdmxQDmJYeiMFyvekTz](https://vercel.com/bineths-projects/quality_back/6xTJoqw8nNdmxQDmJYeiMFyvekTz)
 
 ### 7.4 Deployment Process
